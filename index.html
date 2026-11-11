@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>ระบบลาออนไลน์</title>
+  <title>วันลา</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
@@ -157,6 +156,24 @@
     .det-row i{ font-size:.9rem; color:var(--muted); flex-shrink:0; width:18px; margin-top:3px; }
     .det-lbl{ font-size:.72rem; color:var(--muted); line-height:1; margin-bottom:2px; }
     .det-val{ font-size:.88rem; }
+    /* ── กฎ / คำเตือน ── */
+    .rule-box{ border-radius:12px; padding:10px 12px; font-size:.8rem; margin-bottom:10px; }
+    .rule-box ul{ margin:0; padding-left:18px; }
+    .rule-err{ background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; }
+    .rule-warn{ background:#fff7ed; border:1px solid #fed7aa; color:#c2410c; }
+    .doc-block{ border:1px dashed var(--line); border-radius:12px; padding:10px 12px; margin-bottom:8px; }
+    .doc-block .ttl{ font-size:.84rem; font-weight:500; }
+    .doc-block .sub{ font-size:.72rem; color:var(--muted); }
+    .mini-btn{ border:1px solid var(--line); background:#fff; border-radius:10px; font-size:.76rem; padding:5px 10px; color:var(--ink); }
+    .mini-btn.brand{ border-color:var(--brand); color:var(--brand); }
+    .mini-btn.danger{ border-color:#ef4444; color:#ef4444; }
+    .mini-btn.warn{ border-color:#f59e0b; color:#b45309; }
+    .tag{ display:inline-block; font-size:.68rem; border-radius:6px; padding:1px 6px; margin-left:4px; }
+    .tag-doc{ background:#fff7ed; color:#c2410c; }
+    .tag-kind{ background:#e0f2fe; color:#0369a1; }
+    .hol-cell.off{ background:oklch(0.95 0.02 264); color:var(--muted); }
+    .hol-cell.leave{ box-shadow:inset 0 -3px 0 #0ea5e9; }
+    .bal-sub{ font-size:.72rem; color:var(--muted); }
   </style>
 </head>
 <body>
@@ -164,14 +181,14 @@
   <!-- Splash / loading -->
   <div class="lf-splash" id="lfLoading">
     <div class="splash-logo"><img id="splashLogo" class="hidden"><i class="fi fi-rr-following" id="splashIcon"></i></div>
-    <div class="splash-title" id="splashTitle">ระบบลาออนไลน์</div>
+    <div class="splash-title" id="splashTitle">วันลา</div>
     <div class="splash-sub" id="splashSub">กำลังโหลด...</div>
     <div class="dots"><span></span><span></span><span></span></div>
   </div>
 
   <div class="lf-header">
     <div class="lf-logo"><img id="lfLogo" class="hidden"><i class="fi fi-rr-following" id="lfLogoIcon"></i></div>
-    <div style="flex:1"><h1 id="lfTitle">ระบบลาออนไลน์</h1><small id="lfSub">กำลังโหลด...</small></div>
+    <div style="flex:1"><h1 id="lfTitle">วันลา</h1><small id="lfSub">กำลังโหลด...</small></div>
     <button id="btnOpenProfile" class="hidden" style="background:rgba(255,255,255,.18);border:0;border-radius:10px;width:36px;height:36px;color:#fff;display:grid;place-items:center;flex-shrink:0">
       <i class="fi fi-rr-user-pen"></i>
     </button>
@@ -181,8 +198,8 @@
   <div class="lf-body hidden" id="viewLink">
     <div class="card-soft text-center">
       <i class="fi fi-rr-link-alt" style="font-size:40px;color:var(--brand)"></i>
-      <h5 class="mt-2 mb-1">เชื่อมต่อบัญชี</h5>
-      <p class="text-muted small mb-3">กรอกรหัสพนักงานและเบอร์โทรเพื่อเริ่มใช้งาน</p>
+      <h5 class="mt-2 mb-1">เชื่อมต่อบัญชีพนักงาน</h5>
+      <p class="text-muted small mb-3">กรอกรหัสพนักงานและเบอร์โทรที่ HR บันทึกไว้ (ทำครั้งเดียว)</p>
       <div class="text-start">
         <label class="form-label">รหัสพนักงาน</label>
         <input class="form-control mb-2" id="linkCode" placeholder="เช่น EMP001">
@@ -199,40 +216,53 @@
     <div class="lf-body tab-pane" id="tab-new">
       <div class="card-soft">
         <h6 class="mb-3" id="nlFormTitle">ยื่นใบลา</h6>
-        <div class="hidden mb-3" id="nlEditBanner"
-             style="background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:8px 12px;font-size:.8rem;color:#c2410c">
+        <div class="hidden mb-3" id="nlChangeBanner"
+             style="background:#e0f2fe;border:1px solid #7dd3fc;border-radius:10px;padding:8px 12px;font-size:.8rem;color:#0369a1">
           <div class="d-flex justify-content-between align-items-center gap-2">
-            <span><i class="fi fi-rr-edit me-1"></i>กำลังแก้ไขใบลา <b id="nlEditNo"></b></span>
-            <button class="btn btn-sm" id="btnCancelEdit"
-                    style="border:1px solid #c2410c;color:#c2410c;border-radius:8px;font-size:.72rem;padding:2px 8px">ยกเลิก</button>
+            <span><i class="fi fi-rr-calendar-swap me-1"></i>ขอเปลี่ยนวันของ <b id="nlChangeNo"></b><br><small>เดิม: <span id="nlChangeOld"></span></small></span>
+            <button class="btn btn-sm" id="btnCancelChange" style="border:1px solid #0369a1;color:#0369a1;border-radius:8px;font-size:.72rem;padding:2px 8px">ยกเลิก</button>
           </div>
         </div>
         <label class="form-label">ประเภทการลา</label>
         <select class="form-select mb-1" id="nlType"></select>
         <small class="text-muted" id="nlRemain"></small>
-        <label class="form-label mt-2">วัน เวลา เริ่ม</label>
-        <div class="row g-2">
-          <div class="col-6"><input type="date" class="form-control" id="nlStart"></div>
-          <div class="col-6"><input type="time" class="form-control" id="nlStartTime"></div>
+        <div class="row g-2 mt-1">
+          <div class="col-6"><label class="form-label">วันที่เริ่ม</label><input type="date" class="form-control" id="nlStart"></div>
+          <div class="col-6"><label class="form-label">วันที่สิ้นสุด</label><input type="date" class="form-control" id="nlEnd"></div>
         </div>
-        <label class="form-label mt-2">วัน เวลา สิ้นสุด</label>
-        <div class="row g-2">
-          <div class="col-6"><input type="date" class="form-control" id="nlEnd"></div>
-          <div class="col-6"><input type="time" class="form-control" id="nlEndTime"></div>
-        </div>
-        <div class="day-pill my-2"><span class="small text-muted" id="nlDaysLabel">จำนวนวันลา</span><b id="nlDays">-</b></div>
-        <div class="small text-danger mb-2" id="nlDaysHint"></div>
+        <label class="form-label mt-2">ช่วงเวลา</label>
+        <select class="form-select" id="nlHalf">
+          <option value="full">เต็มวัน</option>
+          <option value="morning">ครึ่งวันเช้า</option>
+          <option value="afternoon">ครึ่งวันบ่าย</option>
+        </select>
+        <div class="day-pill my-2"><span class="small text-muted">จำนวนวันลา (นับเฉพาะวันทำงานของคุณ)</span><b id="nlDays">-</b></div>
+        <div id="nlRules"></div>
         <label class="form-label">เหตุผล</label>
         <textarea class="form-control mb-2" id="nlReason" rows="2"></textarea>
-        <label class="form-label">ผู้ติดต่อระหว่างลา</label>
-        <input class="form-control mb-2" id="nlContact">
-        <label class="form-label">เอกสารแนบ <span class="text-danger" id="nlAttachReq"></span></label>
-        <div class="upload-wrap">
-          <input type="file" class="form-control mb-1" id="nlAttach" accept="image/*,application/pdf">
-          <div class="upload-bar" id="uploadBar"><div class="upload-bar-fill"></div></div>
-          <div class="upload-status" id="nlAttachStatus"></div>
+        <label class="form-label">ผู้ติดต่อ/เบอร์ระหว่างลา</label>
+        <input class="form-control mb-3" id="nlContact">
+
+        <label class="form-label mb-1">เอกสารแนบ</label>
+        <div class="doc-block" data-kind="yellow">
+          <div class="ttl">รูปใบเหลือง <span class="text-danger">*</span></div>
+          <div class="sub">ทุกการลาต้องส่ง</div>
+          <input type="file" class="form-control form-control-sm mt-2 doc-file" accept="image/*,application/pdf" multiple>
+          <div class="upload-status doc-status"></div>
         </div>
-        <input type="hidden" id="nlAttachId">
+        <div class="doc-block hidden" data-kind="medical">
+          <div class="ttl">ใบรับรองแพทย์</div>
+          <div class="sub">ต้องส่งเมื่อลาป่วยตั้งแต่ 2 วันทำงาน หรือลาป่วยติดวันหยุดจนหยุดรวมตั้งแต่ 2 วัน</div>
+          <input type="file" class="form-control form-control-sm mt-2 doc-file" accept="image/*,application/pdf" multiple>
+          <div class="upload-status doc-status"></div>
+        </div>
+        <div class="doc-block hidden" data-kind="travel">
+          <div class="ttl">หลักฐานการจองที่พัก/ตั๋วเดินทาง/ภูมิลำเนา</div>
+          <div class="sub">สำหรับลาพักผ่อนต่อเนื่อง 7 วัน</div>
+          <input type="file" class="form-control form-control-sm mt-2 doc-file" accept="image/*,application/pdf" multiple>
+          <div class="upload-status doc-status"></div>
+        </div>
+        <div class="small text-muted" id="nlDocHint">ยังไม่มีเอกสาร? ยื่นขออนุมัติก่อนได้ แล้วส่งตามหลังภายใน 5 วันในเมนู "ประวัติ"</div>
         <button class="btn btn-accent w-100 mt-3" id="btnSubmitLeave">ยื่นใบลา</button>
       </div>
     </div>
@@ -242,18 +272,55 @@
       <div class="filter-scroll" id="histFilter">
         <span class="chip active" data-st="">ทั้งหมด</span>
         <span class="chip" data-st="SUBMITTED">รออนุมัติ</span>
-        <span class="chip" data-st="L1_APPROVED">ผ่านระดับ 1</span>
         <span class="chip" data-st="APPROVED">อนุมัติ</span>
+        <span class="chip" data-st="DOC">เอกสารค้าง</span>
         <span class="chip" data-st="REJECTED">ไม่อนุมัติ</span>
         <span class="chip" data-st="CANCELLED">ยกเลิก</span>
+        <span class="chip" data-st="CHANGED">เปลี่ยนวันแล้ว</span>
       </div>
       <div id="histList"></div>
     </div>
 
-    <!-- วันคงเหลือ -->
+    <!-- สิทธิ์คงเหลือ -->
     <div class="lf-body tab-pane hidden" id="tab-balance">
-      <h6 class="mb-2">วันลาคงเหลือ <small class="text-muted" id="balYear"></small></h6>
+      <h6 class="mb-1">สิทธิ์วันลาคงเหลือ <small class="text-muted" id="balYear"></small></h6>
+      <div class="small text-muted mb-2" id="balMeta"></div>
       <div class="card-soft" id="balList"></div>
+    </div>
+
+    <!-- เบิกค่าน้ำมัน -->
+    <div class="lf-body tab-pane hidden" id="tab-fuel">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">เบิกค่าน้ำมัน</h6>
+        <select class="form-select form-select-sm" id="fuMonth" style="width:auto"></select>
+      </div>
+      <div class="card-soft" id="fuSummary"></div>
+      <div class="card-soft" id="fuFormCard">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <b style="font-size:.92rem" id="fuFormTitle">บันทึกเที่ยว</b>
+          <button class="mini-btn hidden" id="btnFuCancelEdit">ยกเลิกแก้ไข</button>
+        </div>
+        <input type="hidden" id="fuId">
+        <label class="form-label">วันที่</label>
+        <input type="date" class="form-control mb-2" id="fuDate">
+        <div class="row g-2">
+          <div class="col-6"><label class="form-label">เลขไมล์ขาไป</label><input type="number" inputmode="numeric" class="form-control" id="fuStart"></div>
+          <div class="col-6"><label class="form-label">เลขไมล์ขากลับ</label><input type="number" inputmode="numeric" class="form-control" id="fuEnd"></div>
+        </div>
+        <div class="day-pill my-2"><span class="small text-muted" id="fuRateLbl">ระยะทาง × 6 บาท</span><b id="fuCalc">-</b></div>
+        <label class="form-label">สถานที่ติดต่อ / ใช้ในงาน</label>
+        <input class="form-control mb-2" id="fuPlace" placeholder="เช่น เดินทางไปรับลูกค้าที่ BTN2">
+        <div class="row g-2">
+          <div class="col-6"><div class="doc-block mb-0"><div class="ttl">รูปไมล์ขาไป <span class="text-danger">*</span></div>
+            <input type="file" class="form-control form-control-sm mt-2" id="fuPhotoStart" accept="image/*">
+            <div class="upload-status" id="fuPhotoStartSt"></div></div></div>
+          <div class="col-6"><div class="doc-block mb-0"><div class="ttl">รูปไมล์ขากลับ <span class="text-danger">*</span></div>
+            <input type="file" class="form-control form-control-sm mt-2" id="fuPhotoEnd" accept="image/*">
+            <div class="upload-status" id="fuPhotoEndSt"></div></div></div>
+        </div>
+        <button class="btn btn-accent w-100 mt-3" id="btnFuSave">บันทึกเที่ยว</button>
+      </div>
+      <div id="fuList"></div>
     </div>
 
     <!-- สถิติรายบุคคล -->
@@ -267,6 +334,7 @@
 
     <!-- วันหยุด -->
     <div class="lf-body tab-pane hidden" id="tab-holiday">
+      <div class="small text-muted mb-2" id="holMeta"></div>
       <div class="hol-nav">
         <button id="holPrev"><i class="fi fi-rr-angle-left"></i></button>
         <h6 class="mb-0" id="holMonthLabel"></h6>
@@ -274,18 +342,32 @@
       </div>
       <div class="hol-grid" id="holGrid"></div>
       <div id="holList" class="mt-3"></div>
+
+      <div class="card-soft mt-3 hidden" id="swapBox">
+        <h6 class="mb-1">ขอสลับวันหยุดประจำสัปดาห์</h6>
+        <div class="small text-muted mb-2">สำหรับพนักงานขาย — ต้องได้รับอนุมัติก่อน และแจ้งกลุ่ม HR อัตโนมัติ</div>
+        <div class="row g-2">
+          <div class="col-6"><label class="form-label">วันหยุดเดิม</label><input type="date" class="form-control" id="swFrom"></div>
+          <div class="col-6"><label class="form-label">หยุดแทนวันที่</label><input type="date" class="form-control" id="swTo"></div>
+        </div>
+        <label class="form-label mt-2">เหตุผล</label>
+        <input class="form-control mb-2" id="swReason">
+        <button class="btn btn-accent w-100" id="btnSwap">ส่งคำขอสลับวันหยุด</button>
+        <div id="swapList" class="mt-3"></div>
+      </div>
     </div>
   </div>
 
   <div class="tabbar hidden" id="tabbar">
     <button class="on" data-tab="new"><i class="fi fi-rr-add-document"></i>ยื่นลา</button>
     <button data-tab="history"><i class="fi fi-rr-time-past"></i>ประวัติ</button>
-    <button data-tab="balance"><i class="fi fi-rr-calendar-check"></i>คงเหลือ</button>
-    <button data-tab="stats"><i class="fi fi-rr-chart-pie-alt"></i>สถิติ</button>
+    <button data-tab="balance"><i class="fi fi-rr-calendar-check"></i>สิทธิ์</button>
     <button data-tab="holiday"><i class="fi fi-rr-calendar"></i>วันหยุด</button>
+    <button data-tab="fuel" class="hidden" id="tabFuel"><i class="fi fi-rr-gas-pump"></i>น้ำมัน</button>
+    <button data-tab="stats"><i class="fi fi-rr-chart-pie-alt"></i>สถิติ</button>
   </div>
 
-  <!-- Detail bottom sheet -->
+  <!-- Bottom sheet -->
   <div class="sheet-wrap" id="detailSheet">
     <div class="sheet-backdrop" id="sheetBackdrop"></div>
     <div class="sheet">
@@ -299,112 +381,86 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-  var LF = { userId: null, types: [], balances: {}, be: true, histStatus: '', editId: null };
-  var HOL = { year: new Date().getFullYear(), month: new Date().getMonth() + 1, data: [] };
+  var LF = { me: null, types: [], balances: [], be: true, histStatus: '', changeOf: null, docs: { yellow: [], medical: [], travel: [] }, previewSeq: 0, previewOk: false, docDue: 5 };
+  var HOL = { year: new Date().getFullYear(), month: new Date().getMonth() + 1, days: [], leaves: [] };
   var LF_HIST = [];
 
-  var GAS_URL = 'https://script.google.com/macros/s/AKfycbxTEmdbgihU9giuh9wLxKvguj7RbrLgZMasuNj-seft781hq0DZlMY5jPJiExuawH6nrw/exec';
+  var GAS_URL = 'https://script.google.com/macros/s/AKfycbx8jFUDpyvrUMeA7TqLPMjziDUoiN3qAqxP-LJNdoyRbEHonk9RNRLbL9r-movi9Qpi7w/exec';  // ← URL ของ Web App (Deploy) — เปลี่ยนเมื่อ deploy ใหม่
 
+  /* ── API: ทุกคำขอแนบ LINE ID token ให้เซิร์ฟเวอร์ยืนยันตัวตนเอง (ไม่ส่ง userId จากหน้าเว็บ) ── */
   function api(fn){
     var args = Array.prototype.slice.call(arguments, 1);
+    var idToken = null;
+    try { idToken = (window.liff && liff.getIDToken) ? liff.getIDToken() : null; } catch(e){}
     return fetch(GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ fn: fn, args: args })
+      body: JSON.stringify({ fn: fn, args: args, idToken: idToken })
     }).then(function(r){
       return r.text().then(function(txt){
         try { return JSON.parse(txt); }
-        catch(e){
-          // เซิร์ฟเวอร์ไม่ได้ตอบกลับเป็น JSON (เช่น หน้า login ของ Google เมื่อ deploy ยังไม่เปิดให้ "Anyone" เข้าถึง)
-          throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง (HTTP ' + r.status + '): ' + txt.slice(0, 200));
-        }
+        catch(e){ throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง (HTTP ' + r.status + ')'); }
       });
     }).then(function(j){
       if(j && j.ok) return j.data;
+      if(j && j.code === 'TOKEN_EXPIRED'){
+        try { liff.logout(); } catch(e){}
+        liff.login({ redirectUri: location.href });
+      }
       throw new Error(j && j.error ? j.error : 'API error');
     });
   }
 
-  /* ── Loading helpers ── */
-  function splashHide(){
-    $('#lfLoading').addClass('fade-out');
-    // ลบออกจาก DOM หลัง transition เสร็จ
-    setTimeout(function(){ $('#lfLoading').addClass('hidden'); }, 480);
-  }
-  function setBtnLoading(sel, on){
-    if(on) $(sel).addClass('btn-loading').prop('disabled', true);
-    else   $(sel).removeClass('btn-loading').prop('disabled', false);
-  }
-  function skelCards(n){
-    var h = '';
-    for(var i=0;i<n;i++){
-      h += '<div class="skel-card">'
-         + '<div style="display:flex;justify-content:space-between">'
-         + '<div class="skeleton skel-line" style="width:55%"></div>'
-         + '<div class="skeleton skel-line" style="width:22%"></div>\x3c/div>'
-         + '<div class="skeleton skel-line" style="width:38%"></div>'
-         + '<div class="skeleton skel-line" style="width:70%;margin-bottom:0"></div>'
-         + '\x3c/div>';
-    }
-    return h;
-  }
-  function skelRows(n){
-    var h = '';
-    for(var i=0;i<n;i++){
-      h += '<div class="skeleton skel-row"></div>';
-    }
-    return h;
-  }
-
-  /* ── Utils ── */
-  function fmtBE(iso){
-    if(!iso) return '-';
-    var p = iso.split('-');
-    var m = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    return Number(p[2]) + ' ' + m[Number(p[1])-1] + ' ' + (Number(p[0]) + (LF.be ? 543 : 0));
-  }
-  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/\x3c/g,'&lt;').replace(/>/g,'&gt;'); }
-  function toast(icon, t){ Swal.fire({ toast:true, position:'top', icon:icon, title:t, showConfirmButton:false, timer:2400 }); }
-  var ST = { SUBMITTED:['รออนุมัติ','#f59e0b'], L1_APPROVED:['ผ่านระดับ 1','#0ea5e9'], APPROVED:['อนุมัติ','#10b981'], REJECTED:['ไม่อนุมัติ','#ef4444'], CANCELLED:['ยกเลิก','#94a3b8'] };
+  function splashHide(){ $('#lfLoading').addClass('fade-out'); setTimeout(function(){ $('#lfLoading').addClass('hidden'); }, 480); }
+  function setBtnLoading(sel, on){ if(on) $(sel).addClass('btn-loading').prop('disabled', true); else $(sel).removeClass('btn-loading').prop('disabled', false); }
+  function skelCards(n){ var h=''; for(var i=0;i<n;i++){ h += '<div class="skel-card"><div class="skeleton skel-line" style="width:55%"></div><div class="skeleton skel-line" style="width:38%"></div><div class="skeleton skel-line" style="width:70%;margin-bottom:0"></div>\x3c/div>'; } return h; }
+  function skelRows(n){ var h=''; for(var i=0;i<n;i++) h += '<div class="skeleton skel-row"></div>'; return h; }
+  var TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  var TH_M_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  function fmtBE(iso){ if(!iso) return '-'; var p = iso.split('-'); return Number(p[2]) + ' ' + TH_M_SHORT[Number(p[1])-1] + ' ' + (Number(p[0]) + (LF.be ? 543 : 0)); }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/\x3c/g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function toast(icon, t){ Swal.fire({ toast:true, position:'top', icon:icon, title:t, showConfirmButton:false, timer:2600 }); }
+  function alertList(icon, title, text){ Swal.fire({ icon:icon, title:title, html:'<div style="text-align:left;font-size:.88rem;white-space:pre-line">' + esc(text) + '\x3c/div>' }); }
+  function todayIso(){ var d = new Date(); return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
+  var ST = { SUBMITTED:['รออนุมัติ','#f59e0b'], APPROVED:['อนุมัติ','#10b981'], REJECTED:['ไม่อนุมัติ','#ef4444'], CANCELLED:['ยกเลิก','#94a3b8'], CHANGED:['เปลี่ยนวันแล้ว','#0ea5e9'] };
+  var DOC_LABEL = { yellow:'รูปใบเหลือง', medical:'ใบรับรองแพทย์', travel:'หลักฐานการเดินทาง' };
+  function rangeText(d){ var t = fmtBE(d.start_date) + (d.end_date && d.end_date !== d.start_date ? ' – ' + fmtBE(d.end_date) : ''); if(d.start_half === 'morning') t += ' (ครึ่งเช้า)'; if(d.start_half === 'afternoon') t += ' (ครึ่งบ่าย)'; return t; }
 
   $(document).ready(function(){
     initLiff();
     $('#btnLink').on('click', doLink);
     $('#btnSubmitLeave').on('click', submitLeave);
-    $('#nlType').on('change', onTypeChange);
-    $('#nlStart, #nlEnd, #nlStartTime, #nlEndTime').on('change', recalc);
-    $('#nlAttach').on('change', uploadAttach);
+    $('#nlType').on('change', function(){ onTypeChange(); preview(); });
+    $('#nlStart').on('change', function(){ if(!$('#nlEnd').val() || $('#nlEnd').val() < $('#nlStart').val()) $('#nlEnd').val($('#nlStart').val()); syncHalf(); preview(); });
+    $('#nlEnd').on('change', function(){ syncHalf(); preview(); });
+    $('#nlHalf').on('change', preview);
+    $('.doc-file').on('change', onDocFile);
     $('.tabbar button').on('click', function(){ switchTab($(this).data('tab')); });
-    $('#btnCancelEdit').on('click', exitEditMode);
-
+    $('#btnCancelChange').on('click', exitChangeMode);
     $('#histFilter').on('click', '.chip', function(){
-      $('#histFilter .chip').removeClass('active');
-      $(this).addClass('active');
-      LF.histStatus = $(this).data('st');
-      renderHistFiltered();
+      $('#histFilter .chip').removeClass('active'); $(this).addClass('active');
+      LF.histStatus = $(this).data('st'); renderHist();
     });
-
     $('#sheetBackdrop').on('click', closeSheet);
     $('#holPrev').on('click', function(){ changeHolMonth(-1); });
     $('#holNext').on('click', function(){ changeHolMonth(1); });
     $('#btnOpenProfile').on('click', openProfileSheet);
+    $('#btnSwap').on('click', submitSwap);
   });
 
   function switchTab(t){
-    $('.tabbar button').removeClass('on');
-    $('.tabbar button[data-tab="' + t + '"]').addClass('on');
+    $('.tabbar button').removeClass('on'); $('.tabbar button[data-tab="' + t + '"]').addClass('on');
     $('.tab-pane').addClass('hidden'); $('#tab-' + t).removeClass('hidden');
     if(t === 'history') loadHistory();
     if(t === 'balance') loadBalances();
     if(t === 'stats') loadStats();
-    if(t === 'holiday') loadHolidays();
+    if(t === 'holiday') loadCalendar();
+    if(t === 'fuel') loadFuel();
   }
 
   function initLiff(){
     api('liffGetConfig').then(function(c){
-      LF.be = c.buddhist_era;
-      LF.hoursPerDay = c.hours_per_day || 8;
-      LF.workHours = (c.work_hours || '08:00-17:00').split('-').map(function(x){ return x.trim(); });
-      prefillLeaveTimes();
+      LF.be = c.buddhist_era; LF.docDue = c.doc_due_days || 5;
+      $('#nlDocHint').text('ยังไม่มีเอกสาร? ยื่นขออนุมัติก่อนได้ แล้วส่งตามหลังภายใน ' + LF.docDue + ' วันในเมนู "ประวัติ"');
       if(c.theme_brand){ document.documentElement.style.setProperty('--brand', c.theme_brand); }
       if(c.theme_accent){ document.documentElement.style.setProperty('--accent', c.theme_accent); }
       $('#lfTitle, #splashTitle').text(c.app_name);
@@ -412,573 +468,608 @@
         $('#lfLogo').attr('src', c.logo_url).removeClass('hidden'); $('#lfLogoIcon').addClass('hidden');
         $('#splashLogo').attr('src', c.logo_url).removeClass('hidden'); $('#splashIcon').addClass('hidden');
       }
-      if(!c.liff_id){
-        splashHide();
-        $('#lfSub').text('ยังไม่ได้ตั้งค่า LIFF');
-        Swal.fire({ icon:'warning', title:'ยังไม่ได้ตั้งค่า LIFF ID', text:'กรุณาตั้งค่าในระบบหลังบ้าน' });
-        return;
-      }
+      if(!c.liff_id){ splashHide(); $('#lfSub').text('ยังไม่ได้ตั้งค่า LIFF'); Swal.fire({ icon:'warning', title:'ยังไม่ได้ตั้งค่า LIFF ID', text:'กรุณาแจ้งผู้ดูแลระบบ' }); return; }
       liff.init({ liffId: c.liff_id }).then(function(){
-        if(!liff.isLoggedIn()){ liff.login(); return; }
-        return liff.getProfile();
-      }).then(function(profile){
-        if(!profile) return;
-        LF.userId = profile.userId;
-        $('#lfSub').text(profile.displayName || '');
-        $('#splashSub').text(profile.displayName || '');
-        checkLink();
+        if(!liff.isLoggedIn()){ liff.login({ redirectUri: location.href }); return; }
+        if(!liff.getIDToken()){
+          splashHide();
+          Swal.fire({ icon:'error', title:'ยืนยันตัวตนไม่ได้', text:'LIFF ต้องเปิดสิทธิ์ (scope) "openid" — แจ้งผู้ดูแลระบบ' });
+          return;
+        }
+        return liff.getProfile().then(function(p){ $('#lfSub, #splashSub').text(p.displayName || ''); }).catch(function(){}).then(checkLink);
       }).catch(function(err){
-        splashHide();
-        $('#lfSub').text('เปิดผ่าน LINE เท่านั้น');
+        splashHide(); $('#lfSub').text('เปิดผ่าน LINE เท่านั้น');
         Swal.fire({ icon:'error', title:'เริ่มต้น LIFF ไม่สำเร็จ', text:String(err) });
       });
     }).catch(function(err){
-      splashHide();
-      $('#lfSub').text('โหลดการตั้งค่าไม่สำเร็จ');
+      splashHide(); $('#lfSub').text('โหลดการตั้งค่าไม่สำเร็จ');
       Swal.fire({ icon:'error', title:'โหลดการตั้งค่าไม่สำเร็จ', text:String(err) });
     });
   }
 
   function checkLink(){
-    api('getEmployeeByLineId', LF.userId).then(function(r){
+    api('getEmployeeByLineId').then(function(r){
       splashHide();
-      if(r.status === 'success' && r.linked){
-        $('#lfSub').text(r.employee.name);
-        showApp();
-      } else {
-        $('#viewLink').removeClass('hidden');
-      }
-    }).catch(function(err){
-      splashHide();
-      $('#viewLink').removeClass('hidden');
-      toast('error', 'เชื่อมต่อระบบไม่สำเร็จ: ' + String(err));
-    });
+      if(r.status === 'success' && r.linked){ setMe(r.employee); showApp(); }
+      else { $('#viewLink').removeClass('hidden'); }
+    }).catch(function(err){ splashHide(); $('#viewLink').removeClass('hidden'); toast('error', String(err.message || err)); });
+  }
+
+  function setMe(e){
+    LF.me = e;
+    $('#tabFuel').toggleClass('hidden', !e.fuel_eligible);
+    $('#lfSub').text(e.name + (e.department_name ? ' · ' + e.department_name : ''));
   }
 
   function doLink(){
-    var code = $('#linkCode').val().trim();
-    var phone = $('#linkPhone').val().trim();
+    var code = $('#linkCode').val().trim(), phone = $('#linkPhone').val().trim();
     if(!code || !phone){ toast('error','กรอกข้อมูลให้ครบ'); return; }
     setBtnLoading('#btnLink', true);
-    api('linkLineAccount', code, phone, LF.userId).then(function(r){
+    api('linkLineAccount', code, phone).then(function(r){
       setBtnLoading('#btnLink', false);
       if(r.status === 'success'){
         $('#viewLink').addClass('hidden');
-        $('#lfSub').text(r.employee.name);
         Swal.fire({ icon:'success', title:'เชื่อมต่อสำเร็จ', timer:1500, showConfirmButton:false });
-        showApp();
+        checkLink();
       } else { toast('error', r.message); }
-    }).catch(function(){ setBtnLoading('#btnLink', false); toast('error','เชื่อมต่อไม่สำเร็จ'); });
+    }).catch(function(e){ setBtnLoading('#btnLink', false); toast('error', String(e.message || e)); });
   }
 
   function showApp(){
-    $('#viewApp').removeClass('hidden');
-    $('#tabbar').removeClass('hidden');
-    $('#btnOpenProfile').removeClass('hidden');
+    $('#viewApp, #tabbar, #btnOpenProfile').removeClass('hidden');
     api('liffGetLeaveTypes').then(function(r){
       LF.types = r.data || [];
       var o = '';
       LF.types.forEach(function(t){ o += '<option value="' + t.id + '">' + esc(t.name) + '\x3c/option>'; });
       $('#nlType').html(o);
-      loadBalanceMap(onTypeChange);
+      loadBalanceMap(function(){ onTypeChange(); });
     });
+    var tab = new URLSearchParams(location.search).get('tab');
+    if(tab && $('#tab-' + tab).length) switchTab(tab);
   }
+
+  function curType(){ var id = $('#nlType').val(); return LF.types.filter(function(x){ return x.id === id; })[0]; }
 
   function loadBalanceMap(cb){
-    api('liffGetBalances', LF.userId).then(function(r){
-      LF.balances = {};
-      (r.data || []).forEach(function(b){ LF.balances[b.name] = b.remaining; });
-      if(cb) cb();
-    });
+    api('liffGetBalances').then(function(r){ LF.balances = r.data || []; LF.curHalf = r.current_half; if(cb) cb(); }).catch(function(){ if(cb) cb(); });
   }
 
-  function prefillLeaveTimes(){
-    if(!LF.workHours || LF.workHours.length !== 2) return;
-    if(!$('#nlStartTime').val()) $('#nlStartTime').val(LF.workHours[0]);
-    if(!$('#nlEndTime').val()) $('#nlEndTime').val(LF.workHours[1]);
+  function remainText(b){
+    if(!b) return '';
+    var row = b.rows.filter(function(x){ return x.current; })[0] || b.rows[0];
+    if(!row) return '';
+    var t = row.remaining === null ? 'ไม่จำกัดจำนวน' : ('คงเหลือ ' + row.remaining + ' วัน (' + row.label + ')');
+    if(b.note) t += ' · ' + b.note;
+    return t;
   }
 
   function onTypeChange(){
-    var t = LF.types.filter(function(x){ return x.id === $('#nlType').val(); })[0];
-    if(!t) return;
-    $('#nlAttachReq').text(t.requires_attachment ? '(ต้องแนบ)' : '');
-    if(LF.balances[t.name] !== undefined){
-      if(t.quota_unit === 'hours'){
-        var hrs = Math.round(LF.balances[t.name] * (LF.hoursPerDay || 8) * 100) / 100;
-        $('#nlRemain').text('คงเหลือ ' + hrs + ' ชั่วโมง');
-      } else {
-        $('#nlRemain').text('คงเหลือ ' + LF.balances[t.name] + ' วัน');
-      }
-    }
-    else if(Number(t.default_quota_days) === 0){ $('#nlRemain').text('ไม่จำกัดโควตา'); }
-    else { $('#nlRemain').text(''); }
+    var t = curType(); if(!t) return;
+    var b = LF.balances.filter(function(x){ return x.leave_type_id === t.id; })[0];
+    $('#nlRemain').text(remainText(b));
+    $('.doc-block[data-kind="medical"]').toggleClass('hidden', !t.needs_medical);
+    $('.doc-block[data-kind="travel"]').toggleClass('hidden', !t.needs_travel);
+    syncHalf();
   }
 
-  function recalc(){
-    var start = $('#nlStart').val(), st = $('#nlStartTime').val();
-    var end = $('#nlEnd').val(), et = $('#nlEndTime').val();
+  function syncHalf(){
+    var t = curType();
+    var single = $('#nlStart').val() && $('#nlStart').val() === $('#nlEnd').val();
+    var ok = single && t && t.allow_half;
+    if(!ok) $('#nlHalf').val('full');
+    $('#nlHalf').prop('disabled', !ok);
+  }
 
-    if(!start){ $('#nlDays').text('-'); $('#nlDaysHint').text('กรุณาเลือกวันที่เริ่มลา'); return; }
-    if(!end){ $('#nlDays').text('-'); $('#nlDaysHint').text('กรุณาเลือกวันที่สิ้นสุด'); return; }
-    if(!st || !et){ $('#nlDays').text('-'); $('#nlDaysHint').text('กรุณาระบุเวลาเริ่มและเวลาสิ้นสุด'); return; }
-    if(end < start){ $('#nlDays').text('-'); $('#nlDaysHint').text('วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่ม'); return; }
+  function formObj(){
+    return {
+      leave_type_id: $('#nlType').val(), start_date: $('#nlStart').val(), end_date: $('#nlEnd').val() || $('#nlStart').val(),
+      start_half: $('#nlHalf').val(), reason: $('#nlReason').val().trim(), contact_during_leave: $('#nlContact').val().trim(),
+      attachments: LF.docs
+    };
+  }
 
-    var toMin = function(t){ var p = t.split(':'); return (+p[0]) * 60 + (+p[1]); };
-    var sameDay = start === end;
-    if(sameDay && toMin(et) <= toMin(st)){ $('#nlDays').text('-'); $('#nlDaysHint').text('เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่ม'); return; }
+  function renderRules(r){
+    var h = '';
+    if(r.errors && r.errors.length) h += '<div class="rule-box rule-err"><b>ยื่นไม่ได้</b><ul>' + r.errors.map(function(e){ return '<li>' + esc(e) + '\x3c/li>'; }).join('') + '\x3c/ul>\x3c/div>';
+    if(r.warnings && r.warnings.length) h += '<div class="rule-box rule-warn"><b>โปรดทราบ</b><ul>' + r.warnings.map(function(e){ return '<li>' + esc(e) + '\x3c/li>'; }).join('') + '\x3c/ul>\x3c/div>';
+    $('#nlRules').html(h);
+    (r.required_docs || []).forEach(function(k){ $('.doc-block[data-kind="' + k + '"]').removeClass('hidden'); });
+  }
 
-    $('#nlDaysHint').text('');
-    var spinner = '<span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand-700);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle"></span>';
-    $('#nlDays').html(spinner);
-    api('liffPreviewDays', start, end, 'hourly', 'hourly', st, et).then(function(r){
-      if(r.days > 0){
-        if(sameDay){
-          // ใช้ r.hours จากเซิร์ฟเวอร์ (หักพักเที่ยง/นอกเวลาทำงานแล้ว) ไม่ใช่ผลต่างเวลาดิบจากฝั่ง client
-          $('#nlDays').text(r.hours + ' ชั่วโมง');
-        } else {
-          $('#nlDays').text(r.days + ' วัน');
-        }
-      } else {
-        $('#nlDays').text('-');
-        $('#nlDaysHint').text('ช่วงเวลาที่เลือกไม่อยู่ในวันทำงาน');
-      }
+  /* ตรวจกฎกับเซิร์ฟเวอร์ทุกครั้งที่เปลี่ยนข้อมูล — เห็นปัญหาก่อนกดยื่น */
+  function preview(){
+    var o = formObj();
+    if(!o.leave_type_id || !o.start_date){ $('#nlDays').text('-'); $('#nlRules').html(''); LF.previewOk = false; return; }
+    var seq = ++LF.previewSeq;
+    $('#nlDays').html('<span style="display:inline-block;width:14px;height:14px;border:2px solid var(--brand-700);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle"></span>');
+    api('liffPreview', o, LF.changeOf ? LF.changeOf.id : null).then(function(r){
+      if(seq !== LF.previewSeq) return;
+      if(r.status !== 'success'){ $('#nlDays').text('-'); renderRules({ errors:[r.message] }); LF.previewOk = false; return; }
+      $('#nlDays').text(r.days > 0 ? r.days + ' วัน' : '-');
+      renderRules(r);
+      LF.previewOk = !(r.errors && r.errors.length);
+    }).catch(function(e){ if(seq === LF.previewSeq){ $('#nlDays').text('-'); renderRules({ errors:[String(e.message || e)] }); } });
+  }
+
+  function uploadFile(file){
+    return new Promise(function(resolve, reject){
+      if(file.size > 5*1024*1024){ reject(new Error('ไฟล์ ' + file.name + ' ใหญ่เกิน 5MB')); return; }
+      var reader = new FileReader();
+      reader.onload = function(e){
+        api('liffUploadAttachment', e.target.result.split(',')[1], file.name, file.type).then(function(r){
+          if(r.status === 'success') resolve(r.file_id); else reject(new Error(r.message || 'อัปโหลดไม่สำเร็จ'));
+        }).catch(reject);
+      };
+      reader.onerror = function(){ reject(new Error('อ่านไฟล์ไม่สำเร็จ')); };
+      reader.readAsDataURL(file);
     });
   }
 
-  function uploadAttach(ev){
-    var file = ev.target.files[0]; if(!file) return;
-    if(file.size > 5*1024*1024){ toast('error','ไฟล์ใหญ่เกิน 5MB'); return; }
-    var reader = new FileReader();
-    reader.onload = function(e){
-      $('#nlAttachStatus').html('<span class="spin-sm"></span><span>กำลังอัพโหลด...</span>');
-      $('#uploadBar').show();
-      api('liffUploadAttachment', LF.userId, e.target.result.split(',')[1], file.name, file.type).then(function(r){
-        $('#uploadBar').hide();
-        if(r.status === 'success'){
-          $('#nlAttachId').val(r.file_id);
-          $('#nlAttachStatus').html('<i class="fi fi-rr-check-circle" style="color:#10b981"></i><span>แนบไฟล์แล้ว</span>');
-        } else {
-          $('#nlAttachStatus').html('<i class="fi fi-rr-cross-circle" style="color:#ef4444"></i><span>อัพโหลดไม่สำเร็จ</span>');
-        }
-      }).catch(function(){
-        $('#uploadBar').hide();
-        $('#nlAttachStatus').html('<i class="fi fi-rr-cross-circle" style="color:#ef4444"></i><span>อัพโหลดไม่สำเร็จ</span>');
-      });
-    };
-    reader.readAsDataURL(file);
+  function uploadMany(files, $status){
+    var list = Array.prototype.slice.call(files || []);
+    var ids = [];
+    $status.html('<span class="spin-sm"></span><span>กำลังอัปโหลด ' + list.length + ' ไฟล์...</span>');
+    return list.reduce(function(p, f){ return p.then(function(){ return uploadFile(f).then(function(id){ ids.push(id); }); }); }, Promise.resolve())
+      .then(function(){ $status.html('<i class="fi fi-rr-check-circle" style="color:#10b981"></i><span>แนบแล้ว ' + ids.length + ' ไฟล์</span>'); return ids; })
+      .catch(function(e){ $status.html('<i class="fi fi-rr-cross-circle" style="color:#ef4444"></i><span>' + esc(e.message || e) + '</span>'); return ids; });
   }
 
-  /* ── โหมดแก้ไขใบลา (เฉพาะใบที่ยังไม่มีใครอนุมัติ) ── */
-  function startEditLeave(id){
-    var d = LF_HIST.filter(function(x){ return x.id === id; })[0];
-    if(!d){ toast('error','ไม่พบใบลา'); return; }
-    if(d.status !== 'SUBMITTED'){ toast('error','แก้ไขได้เฉพาะใบลาที่ยังไม่มีผู้อนุมัติดำเนินการ'); return; }
-
-    LF.editId = id;
-    $('#nlType').val(d.leave_type_id);
-    $('#nlStart').val(d.start_date); $('#nlEnd').val(d.end_date);
-    $('#nlStartTime').val(d.start_time || ''); $('#nlEndTime').val(d.end_time || '');
-    prefillLeaveTimes();
-    $('#nlReason').val(d.reason || '');
-    $('#nlContact').val(d.contact_during_leave || '');
-    $('#nlAttachId').val((d.attachment_file_ids && d.attachment_file_ids[0]) || '');
-    $('#nlAttach').val(''); $('#nlAttachStatus').html(''); $('#uploadBar').hide();
-
-    $('#nlFormTitle').text('แก้ไขใบลา');
-    $('#nlEditNo').text(d.request_no || '');
-    $('#nlEditBanner').removeClass('hidden');
-    $('#btnSubmitLeave').text('บันทึกการแก้ไข');
-
-    onTypeChange(); recalc();
-    switchTab('new');
-    window.scrollTo(0, 0);
+  function onDocFile(ev){
+    var $blk = $(this).closest('.doc-block'), kind = $blk.data('kind');
+    uploadMany(ev.target.files, $blk.find('.doc-status')).then(function(ids){
+      LF.docs[kind] = (LF.docs[kind] || []).concat(ids);
+      preview();
+    });
   }
 
-  function exitEditMode(){
-    LF.editId = null;
-    $('#nlFormTitle').text('ยื่นใบลา');
-    $('#nlEditBanner').addClass('hidden');
-    $('#btnSubmitLeave').text('ยื่นใบลา');
-    resetLeaveForm();
-  }
-
-  function resetLeaveForm(){
-    $('#nlReason').val(''); $('#nlContact').val(''); $('#nlAttachId').val(''); $('#nlAttach').val('');
-    $('#nlAttachStatus').html(''); $('#uploadBar').hide(); $('#nlDays').text('-'); $('#nlDaysHint').text('');
-    $('#nlStart').val(''); $('#nlEnd').val(''); $('#nlStartTime').val(''); $('#nlEndTime').val('');
-    prefillLeaveTimes();
+  function resetForm(){
+    $('#nlReason, #nlContact, #nlStart, #nlEnd').val(''); $('#nlHalf').val('full');
+    $('.doc-file').val(''); $('.doc-status').html('');
+    LF.docs = { yellow: [], medical: [], travel: [] };
+    $('#nlDays').text('-'); $('#nlRules').html(''); LF.previewOk = false;
+    onTypeChange();
   }
 
   function submitLeave(){
-    var tid = $('#nlType').val();
-    var start = $('#nlStart').val(), st = $('#nlStartTime').val();
-    var end = $('#nlEnd').val(), et = $('#nlEndTime').val();
-    if(!tid || !start || !end){ toast('error','กรอกข้อมูลให้ครบ'); return; }
-    if(!st || !et){ toast('error','กรุณาระบุเวลาเริ่มและเวลาสิ้นสุด'); return; }
-    var obj = {
-      leave_type_id: tid, start_date: start, end_date: end,
-      start_half: 'hourly', end_half: 'hourly',
-      start_time: st, end_time: et,
-      reason: $('#nlReason').val().trim(),
-      contact_during_leave: $('#nlContact').val().trim(),
-      attachment_file_ids: $('#nlAttachId').val() ? [$('#nlAttachId').val()] : []
-    };
-
-    var editing = LF.editId;
+    var o = formObj();
+    if(!o.leave_type_id || !o.start_date){ toast('error','กรุณาเลือกประเภทและวันที่ลา'); return; }
     setBtnLoading('#btnSubmitLeave', true);
-    var call = editing
-      ? api('liffUpdateLeave', LF.userId, editing, obj)
-      : api('liffSubmitLeave', LF.userId, obj);
-
+    var call = LF.changeOf ? api('liffRequestChange', LF.changeOf.id, o) : api('liffSubmitLeave', o);
     call.then(function(r){
       setBtnLoading('#btnSubmitLeave', false);
-      if(r.status !== 'success'){ toast('error', r.message); return; }
-      Swal.fire({
-        icon:'success',
-        title: editing ? 'แก้ไขใบลาแล้ว' : 'ยื่นใบลาแล้ว',
-        text: r.request_no, timer:1800, showConfirmButton:false
-      });
-      if(editing){ exitEditMode(); loadHistory(); }
-      else { resetLeaveForm(); }
+      if(r.status !== 'success'){ alertList('error', 'ยื่นไม่ได้', r.message); return; }
+      var extra = r.doc_status === 'pending' ? '\nอย่าลืมส่งเอกสารที่ค้างภายใน ' + LF.docDue + ' วัน (เมนู "ประวัติ")' : '';
+      alertList('success', LF.changeOf ? 'ส่งคำขอเปลี่ยนวันแล้ว' : 'ยื่นใบลาแล้ว', r.message + extra);
+      var wasChange = !!LF.changeOf;
+      exitChangeMode(true);
+      resetForm();
       loadBalanceMap(onTypeChange);
-    }).catch(function(){
+      if(wasChange) switchTab('history');
+    }).catch(function(e){
       setBtnLoading('#btnSubmitLeave', false);
-      toast('error', editing ? 'แก้ไขใบลาไม่สำเร็จ' : 'ส่งใบลาไม่สำเร็จ');
+      // ไม่รู้ผลการส่ง — ให้ตรวจสถานะก่อนส่งซ้ำ
+      alertList('warning', 'ไม่แน่ใจว่าส่งสำเร็จหรือไม่', 'กรุณาเปิดเมนู "ประวัติ" ตรวจสถานะคำขอก่อนส่งซ้ำ\n(' + (e.message || e) + ')');
     });
   }
 
+  /* ── ขอเปลี่ยนวัน: ใช้ฟอร์มเดิม ประเภทลาคงเดิม ── */
+  function startChange(id){
+    var d = LF_HIST.filter(function(x){ return x.id === id; })[0]; if(!d) return;
+    LF.changeOf = d;
+    switchTab('new');
+    $('#nlType').val(d.leave_type_id).prop('disabled', true);
+    $('#nlStart').val(''); $('#nlEnd').val(''); $('#nlHalf').val('full');
+    $('#nlReason').val(d.reason || ''); $('#nlContact').val(d.contact_during_leave || '');
+    $('#nlChangeNo').text(d.request_no); $('#nlChangeOld').text(rangeText(d) + ' · ' + d.total_days + ' วัน');
+    $('#nlChangeBanner').removeClass('hidden');
+    $('#nlFormTitle').text('ขอเปลี่ยนวันลา');
+    $('#btnSubmitLeave').text('ส่งคำขอเปลี่ยนวัน');
+    onTypeChange();
+    window.scrollTo(0,0);
+  }
+  function exitChangeMode(silent){
+    LF.changeOf = null;
+    $('#nlType').prop('disabled', false);
+    $('#nlChangeBanner').addClass('hidden');
+    $('#nlFormTitle').text('ยื่นใบลา');
+    $('#btnSubmitLeave').text('ยื่นใบลา');
+    if(silent !== true) resetForm();
+  }
+
+  /* ── ประวัติ ── */
   function loadHistory(){
     $('#histList').html(skelCards(3));
-    api('liffGetHistory', LF.userId).then(function(r){
-      LF_HIST = r.data || [];
-      renderHistFiltered();
-    }).catch(function(){ $('#histList').html('<div class="text-center text-muted py-4">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
+    api('liffGetHistory').then(function(r){ LF_HIST = r.data || []; renderHist(); })
+      .catch(function(){ $('#histList').html('<div class="text-center text-muted py-4">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
   }
 
-  // แสดงชั่วโมงสำหรับใบลารายชั่วโมง (แปลงจาก total_days ที่เซิร์ฟเวอร์คำนวณ หักพักเที่ยงแล้ว) แทนที่จะโชว์เป็นเศษของวัน
-  function fmtAmountLF(d){
-    if(d.start_half === 'hourly'){
-      var hrs = Math.round(Number(d.total_days) * (LF.hoursPerDay || 8) * 100) / 100;
-      return hrs + ' ชั่วโมง';
-    }
-    return d.total_days + ' วัน';
-  }
-
-  function renderHistFiltered(){
-    var list = LF.histStatus ? LF_HIST.filter(function(d){ return d.status === LF.histStatus; }) : LF_HIST;
+  function renderHist(){
+    var f = LF.histStatus;
+    var list = LF_HIST.filter(function(d){
+      if(!f) return true;
+      if(f === 'DOC') return d.doc_status === 'pending' && (d.status === 'SUBMITTED' || d.status === 'APPROVED');
+      return d.status === f;
+    });
     if(!list.length){ $('#histList').html('<div class="text-center text-muted py-4">ไม่มีรายการ\x3c/div>'); return; }
     var html = '';
     list.forEach(function(d){
       var st = ST[d.status] || [d.status,'#94a3b8'];
-      var range = fmtBE(d.start_date) + (d.start_date !== d.end_date ? ' - ' + fmtBE(d.end_date) : '');
-      if(d.start_half === 'hourly'){ range += ' (' + (d.start_time || '') + '-' + (d.end_time || '') + ' น.)'; }
+      var tags = '';
+      if(d.kind === 'change') tags += '<span class="tag tag-kind">เปลี่ยนจาก ' + esc(d.ref_request_no) + '\x3c/span>';
+      if(d.pending_action && d.pending_action.type === 'cancel') tags += '<span class="tag tag-doc">รออนุมัติยกเลิก\x3c/span>';
+      if(d.pending_change_no) tags += '<span class="tag tag-kind">รอเปลี่ยนวัน (' + esc(d.pending_change_no) + ')\x3c/span>';
+      if(d.doc_status === 'pending' && d.can_upload) tags += '<span class="tag tag-doc">ค้าง ' + d.missing_docs.map(function(k){ return DOC_LABEL[k]; }).join(', ') + '\x3c/span>';
+      var btns = '';
+      if(d.can_upload) btns += '<button class="mini-btn warn" onclick="event.stopPropagation();openUpload(\'' + d.id + '\')">ส่งเอกสาร\x3c/button>';
+      if(d.can_change) btns += '<button class="mini-btn brand" onclick="event.stopPropagation();startChange(\'' + d.id + '\')">ขอเปลี่ยนวัน\x3c/button>';
+      if(d.can_cancel) btns += '<button class="mini-btn danger" onclick="event.stopPropagation();askCancel(\'' + d.id + '\')">ขอยกเลิก\x3c/button>';
+      if(d.can_withdraw) btns += '<button class="mini-btn danger" onclick="event.stopPropagation();askWithdraw(\'' + d.id + '\')">ถอนคำขอ\x3c/button>';
       html += '<div class="hist-card" style="cursor:pointer" onclick="showDetail(\'' + d.id + '\')">'
         + '<div class="d-flex justify-content-between align-items-start">'
-        + '<div><b>' + esc(d.leave_type_name) + '\x3c/b><div class="no">' + esc(d.request_no) + '\x3c/div>\x3c/div>'
+        + '<div><b>' + esc(d.leave_type_name) + '\x3c/b>' + tags + '<div class="no">' + esc(d.request_no) + '\x3c/div>\x3c/div>'
         + '<span class="badge-st" style="background:' + st[1] + '22;color:' + st[1] + '">' + st[0] + '\x3c/span>\x3c/div>'
-        + '<div class="small mt-1">' + range + ' · ' + fmtAmountLF(d) + '\x3c/div>'
-        + (d.last_comment ? '<div class="small text-muted mt-1">หมายเหตุ: ' + esc(d.last_comment) + '\x3c/div>' : '')
-        + (d.status === 'SUBMITTED' || d.status === 'L1_APPROVED'
-          ? '<div class="d-flex gap-2 mt-2">'
-            // แก้ไขได้เฉพาะตอนยังไม่มีใครอนุมัติ พออนุมัติระดับ 1 แล้วเหลือแค่ยกเลิก
-            + (d.status === 'SUBMITTED'
-              ? '<button class="btn btn-sm flex-fill" style="border:1px solid var(--brand);color:var(--brand);border-radius:10px;font-size:.78rem" onclick="event.stopPropagation();startEditLeave(\'' + d.id + '\')">แก้ไข\x3c/button>'
-              : '')
-            + '<button class="btn btn-sm flex-fill" style="border:1px solid #ef4444;color:#ef4444;border-radius:10px;font-size:.78rem" onclick="event.stopPropagation();cancelLeave(\'' + d.id + '\')">ยกเลิกใบลา\x3c/button>'
-            + '\x3c/div>'
-          : '')
+        + '<div class="small mt-1">' + rangeText(d) + ' · ' + d.total_days + ' วัน\x3c/div>'
+        + (d.last_comment ? '<div class="small text-muted mt-1">' + esc(d.last_comment) + '\x3c/div>' : '')
+        + (btns ? '<div class="d-flex flex-wrap gap-2 mt-2">' + btns + '\x3c/div>' : '')
         + '\x3c/div>';
     });
     $('#histList').html(html);
   }
 
-  function cancelLeave(leaveId){
-    Swal.fire({
-      title:'ยกเลิกใบลา?', icon:'warning',
-      html:'<textarea id="swCancelReason" class="swal2-textarea" placeholder="เหตุผลการยกเลิก (ไม่บังคับ)" style="height:80px;font-family:Prompt,sans-serif"></textarea>',
-      showCancelButton:true, confirmButtonText:'ยืนยันยกเลิก', cancelButtonText:'ไม่ยกเลิก',
-      confirmButtonColor:'#ef4444'
+  function askCancel(id){
+    Swal.fire({ title:'ขอยกเลิกวันลา?', text:'ต้องรอผู้อนุมัติอนุมัติก่อน วันลาจึงจะถูกยกเลิก', icon:'question',
+      input:'text', inputPlaceholder:'เหตุผล (ไม่บังคับ)', showCancelButton:true, confirmButtonText:'ส่งคำขอยกเลิก', cancelButtonText:'ปิด', confirmButtonColor:'#ef4444'
     }).then(function(res){
       if(!res.isConfirmed) return;
-      var reason = (document.getElementById('swCancelReason') || {}).value || '';
-      Swal.fire({ title:'กำลังยกเลิก...', didOpen:function(){ Swal.showLoading(); }, allowOutsideClick:false });
-      api('liffCancelLeave', LF.userId, leaveId, reason).then(function(r){
-        Swal.close();
-        if(r.status === 'success'){
-          toast('success', r.message);
-          loadHistory();
-          loadBalanceMap(onTypeChange);
-        } else { toast('error', r.message); }
-      }).catch(function(){ Swal.close(); toast('error','ยกเลิกไม่สำเร็จ'); });
+      api('liffRequestCancel', id, res.value || '').then(function(r){ toast(r.status === 'success' ? 'success' : 'error', r.message); loadHistory(); })
+        .catch(function(e){ toast('error', String(e.message || e)); });
     });
   }
 
-  function loadBalances(){
-    $('#balList').html(skelRows(4));
-    api('liffGetBalances', LF.userId).then(function(r){
-      $('#balYear').text('ปี ' + (r.year + (LF.be ? 543 : 0)));
-      if(!r.data || !r.data.length){ $('#balList').html('<div class="text-center text-muted py-3">ยังไม่มีข้อมูลโควตา\x3c/div>'); return; }
-      var html = '';
-      r.data.forEach(function(b){
-        var pct = b.entitled > 0 ? Math.min(100, Math.round((b.entitled - b.remaining) / b.entitled * 100)) : 0;
-        var unlimited = Number(b.entitled) === 0;
-        var isHours = b.quota_unit === 'hours';
-        var hpd = LF.hoursPerDay || 8;
-        var remainDisp = isHours ? Math.round(b.remaining * hpd * 100) / 100 : b.remaining;
-        var entitledDisp = isHours ? Math.round(b.entitled * hpd * 100) / 100 : b.entitled;
-        var unitLabel = isHours ? 'ชม.' : 'วัน';
-        html += '<div class="bal-item">'
-          + '<div class="d-flex justify-content-between align-items-center">'
-          + '<div><span class="bal-dot" style="background:' + b.color + ';width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle">\x3c/span>'
-          + '<span style="font-size:.9rem">' + esc(b.name) + '\x3c/span>\x3c/div>'
-          + '<div class="text-end"><b style="font-size:1.1rem">' + remainDisp + '\x3c/b>'
-          + ' <span style="font-size:.76rem;color:var(--muted)">/ ' + (unlimited ? '∞' : entitledDisp) + ' ' + unitLabel + '\x3c/span>\x3c/div>\x3c/div>'
-          + (!unlimited ? '<div class="bal-bar mt-1"><div class="bal-bar-fill" style="width:' + pct + '%;background:' + b.color + '">\x3c/div>\x3c/div>' : '')
-          + '\x3c/div>';
-      });
-      $('#balList').html(html);
-    }).catch(function(){ $('#balList').html('<div class="text-center text-muted py-3">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
-  }
-  /* ── Detail bottom sheet ── */
-  function showDetail(id){
-    var cached = LF_HIST.filter(function(d){ return d.id === id; })[0];
-    $('#sheetBody').html(
-      cached ? buildDetailHtml(cached, true) :
-      '<div class="text-center py-5"><div class="spinner-border" style="width:28px;height:28px;border-width:3px"></div>\x3c/div>'
-    );
-    $('#detailSheet').addClass('show');
-    api('liffGetLeaveDetail', LF.userId, id).then(function(r){
-      if(r.status !== 'success'){ $('#sheetBody').html('<div class="text-center text-muted py-4">' + esc(r.message||'ไม่พบข้อมูล') + '\x3c/div>'); return; }
-      $('#sheetBody').html(buildDetailHtml(r.data, false));
-    }).catch(function(){ if(!cached) $('#sheetBody').html('<div class="text-center text-muted py-4">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
+  function askWithdraw(id){
+    Swal.fire({ title:'ถอนคำขอนี้?', icon:'warning', input:'text', inputPlaceholder:'เหตุผล (ไม่บังคับ)',
+      showCancelButton:true, confirmButtonText:'ถอนคำขอ', cancelButtonText:'ปิด', confirmButtonColor:'#ef4444'
+    }).then(function(res){
+      if(!res.isConfirmed) return;
+      api('liffWithdrawLeave', id, res.value || '').then(function(r){ toast(r.status === 'success' ? 'success' : 'error', r.message); loadHistory(); loadBalanceMap(onTypeChange); })
+        .catch(function(e){ toast('error', String(e.message || e)); });
+    });
   }
 
-  function buildDetailHtml(d, slim){
-    var st = ST[d.status] || [d.status,'#94a3b8'];
-    var range = fmtBE(d.start_date) + (d.start_date !== d.end_date ? ' - ' + fmtBE(d.end_date) : '');
-    var modeLabel = d.start_half === 'morning' ? 'ครึ่งวันเช้า' : (d.start_half === 'afternoon' ? 'ครึ่งวันบ่าย' : (d.start_half === 'hourly' ? 'รายชั่วโมง (' + (d.start_time || '') + '-' + (d.end_time || '') + ' น.)' : 'เต็มวัน'));
-    var h = '<div class="d-flex justify-content-between align-items-center mb-2">'
-      + '<b style="font-size:1rem">' + esc(d.leave_type_name) + '\x3c/b>'
-      + '<span class="badge-st" style="background:' + st[1] + '22;color:' + st[1] + '">' + st[0] + '\x3c/span>\x3c/div>'
-      + '<div class="small text-muted mb-3" style="font-size:.76rem">เลขที่ ' + esc(d.request_no||'') + '\x3c/div>'
-      + detRow('fi-rr-calendar', 'ช่วงวันลา', range + ' (' + fmtAmountLF(d) + ')')
-      + detRow('fi-rr-clock', 'รูปแบบ', modeLabel);
-    if(!slim){
+  /* ── ส่งเอกสารตามหลัง ── */
+  function openUpload(id){
+    var d = LF_HIST.filter(function(x){ return x.id === id; })[0]; if(!d) return;
+    var h = '<h6 class="mb-1">ส่งเอกสาร · ' + esc(d.request_no) + '\x3c/h6><div class="small text-muted mb-3">' + esc(d.leave_type_name) + ' · ' + rangeText(d) + '\x3c/div>';
+    d.missing_docs.forEach(function(k){
+      h += '<div class="doc-block"><div class="ttl">' + DOC_LABEL[k] + '\x3c/div>'
+        + '<input type="file" class="form-control form-control-sm mt-2 up-file" data-kind="' + k + '" accept="image/*,application/pdf" multiple>'
+        + '<div class="upload-status up-status-' + k + '"></div>\x3c/div>';
+    });
+    $('#sheetBody').html(h);
+    $('#detailSheet').addClass('show');
+    $('.up-file').on('change', function(ev){
+      var kind = $(this).data('kind');
+      uploadMany(ev.target.files, $('.up-status-' + kind)).then(function(ids){
+        if(!ids.length) return;
+        api('liffAttachDocs', id, kind, ids).then(function(r){
+          toast(r.status === 'success' ? 'success' : 'error', r.message);
+          if(r.status === 'success' && r.doc_status === 'complete'){ closeSheet(); loadHistory(); }
+        }).catch(function(e){ toast('error', String(e.message || e)); });
+      });
+    });
+  }
+
+  /* ── รายละเอียด ── */
+  function showDetail(id){
+    $('#sheetBody').html('<div class="text-center py-5"><div class="spinner-border" style="width:28px;height:28px;border-width:3px"></div>\x3c/div>');
+    $('#detailSheet').addClass('show');
+    api('liffGetLeaveDetail', id).then(function(r){
+      if(r.status !== 'success'){ $('#sheetBody').html('<div class="text-center text-muted py-4">' + esc(r.message||'ไม่พบข้อมูล') + '\x3c/div>'); return; }
+      var d = r.data, st = ST[d.status] || [d.status,'#94a3b8'];
+      var h = '<div class="d-flex justify-content-between align-items-center mb-2"><b style="font-size:1rem">' + esc(d.leave_type_name) + '\x3c/b>'
+        + '<span class="badge-st" style="background:' + st[1] + '22;color:' + st[1] + '">' + st[0] + '\x3c/span>\x3c/div>'
+        + '<div class="small text-muted mb-3">เลขที่ ' + esc(d.request_no) + (d.kind === 'change' ? ' · เปลี่ยนจาก ' + esc(d.ref_request_no) + ' (' + esc(d.ref_range) + ')' : '') + '\x3c/div>'
+        + detRow('fi-rr-calendar', 'ช่วงวันลา', rangeText(d) + ' · ' + d.total_days + ' วัน');
       if(d.reason) h += detRow('fi-rr-memo', 'เหตุผล', d.reason);
       if(d.contact_during_leave) h += detRow('fi-rr-phone-call', 'ผู้ติดต่อ', d.contact_during_leave);
-      if(d.approved_by_name) h += detRow('fi-rr-user', 'อนุมัติโดย', d.approved_by_name);
-      if(d.last_comment) h += detRow('fi-rr-comment', 'ความเห็น', d.last_comment);
-      if(d.created_at) h += detRow('fi-rr-time-add', 'ยื่นเมื่อ', fmtBE(d.created_at.substring(0,10)));
-      if(d.attachment_url){
-        h += '<a href="' + d.attachment_url + '" target="_blank" class="d-flex align-items-center gap-2 mt-2 mb-1" '
-          + 'style="border:1px solid var(--brand);color:var(--brand);border-radius:10px;padding:8px 14px;font-size:.85rem;text-decoration:none">'
-          + '<i class="fi fi-rr-clip">\x3c/i>ดูเอกสารแนบ\x3c/a>';
+      if(d.pending_action) h += detRow('fi-rr-hourglass', 'รอผู้อนุมัติ', 'ขอยกเลิกวันลา' + (d.pending_action.reason ? ' — ' + d.pending_action.reason : ''));
+      if(d.warnings && d.warnings.length) h += '<div class="rule-box rule-warn mt-2"><ul>' + d.warnings.map(function(w){ return '<li>' + esc(w) + '\x3c/li>'; }).join('') + '\x3c/ul>\x3c/div>';
+      ['yellow','medical','travel'].forEach(function(k){
+        (d.attachments[k] || []).forEach(function(a, i){
+          h += '<a href="' + a.url + '" target="_blank" class="d-flex align-items-center gap-2 mt-2" style="border:1px solid var(--line);color:var(--brand);border-radius:10px;padding:7px 12px;font-size:.84rem;text-decoration:none"><i class="fi fi-rr-clip">\x3c/i>' + DOC_LABEL[k] + (i ? ' (' + (i+1) + ')' : '') + '\x3c/a>';
+        });
+      });
+      if(d.missing_docs.length) h += '<div class="small mt-2" style="color:#c2410c">ยังค้าง: ' + d.missing_docs.map(function(k){ return DOC_LABEL[k]; }).join(', ') + (d.doc_due_date ? ' (ส่งภายใน ' + fmtBE(d.doc_due_date) + ')' : '') + '\x3c/div>';
+      if(d.approvals && d.approvals.length){
+        h += '<div class="mt-3 small"><b>ประวัติการดำเนินการ\x3c/b><ul class="mb-0 mt-1" style="padding-left:18px">';
+        d.approvals.forEach(function(a){ h += '<li>' + esc(a.action) + ' โดย ' + esc(a.by) + (a.comment ? ' — ' + esc(a.comment) : '') + '\x3c/li>'; });
+        (d.edit_history || []).forEach(function(e){ h += '<li>แก้วันที่โดย ' + esc(e.by) + ': ' + esc(e.from) + ' → ' + esc(e.to) + '\x3c/li>'; });
+        h += '\x3c/ul>\x3c/div>';
       }
-    }
-    if(d.status === 'SUBMITTED' || d.status === 'L1_APPROVED'){
-      h += '<div class="d-flex gap-2 mt-3">';
-      if(d.status === 'SUBMITTED'){
-        h += '<button class="btn btn-sm flex-fill" style="border:1px solid var(--brand);color:var(--brand);border-radius:10px" '
-          + 'onclick="closeSheet();setTimeout(function(){startEditLeave(\'' + d.id + '\')},220)">แก้ไข\x3c/button>';
-      }
-      h += '<button class="btn btn-sm flex-fill" style="border:1px solid #ef4444;color:#ef4444;border-radius:10px" '
-        + 'onclick="closeSheet();setTimeout(function(){cancelLeave(\'' + d.id + '\')},220)">ยกเลิกใบลา\x3c/button>'
-        + '\x3c/div>';
-    }
-    return h;
+      $('#sheetBody').html(h);
+    }).catch(function(){ $('#sheetBody').html('<div class="text-center text-muted py-4">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
   }
-
   function detRow(icon, label, value){
     return '<div class="det-row"><i class="fi ' + icon + '">\x3c/i><div><div class="det-lbl">' + label + '\x3c/div><div class="det-val">' + esc(String(value||'')) + '\x3c/div>\x3c/div>\x3c/div>';
   }
+  function closeSheet(){ $('#detailSheet').removeClass('show'); }
 
-  function closeSheet(){
-    $('#detailSheet').removeClass('show');
+  /* ── สิทธิ์คงเหลือ ── */
+  function loadBalances(){
+    $('#balList').html(skelRows(4));
+    api('liffGetBalances').then(function(r){
+      LF.balances = r.data || [];
+      $('#balYear').text('ปี ' + (r.year + (LF.be ? 543 : 0)));
+      $('#balMeta').text(LF.me ? ('กลุ่ม' + (LF.me.work_group === 'sales' ? 'พนักงานขาย' : 'พนักงานสำนักงาน') + ' · เวลาทำงาน ' + LF.me.work_hours + ' · หยุดประจำสัปดาห์: ' + LF.me.weekly_off_label) : '');
+      var html = '';
+      LF.balances.forEach(function(b){
+        var main = b.rows.filter(function(x){ return x.current; })[0] || b.rows[0];
+        if(!main) return;
+        var unlimited = main.cap === null;
+        var pct = !unlimited && main.cap > 0 ? Math.min(100, Math.round((main.used + main.pending) / main.cap * 100)) : 0;
+        var others = b.rows.filter(function(x){ return x !== main; }).map(function(x){ return x.label + ': เหลือ ' + (x.remaining === null ? '∞' : x.remaining) + '/' + (x.cap === null ? '∞' : x.cap); }).join(' · ');
+        html += '<div class="bal-item"><div class="d-flex justify-content-between align-items-center">'
+          + '<div><span class="bal-dot" style="background:' + esc(b.color) + '">\x3c/span><span style="font-size:.9rem">' + esc(b.name) + '\x3c/span>'
+          + '<div class="bal-sub">' + esc(main.label) + (main.pending ? ' · รออนุมัติ ' + main.pending + ' วัน' : '') + '\x3c/div>\x3c/div>'
+          + '<div class="text-end"><b style="font-size:1.1rem">' + (unlimited ? '–' : main.remaining) + '\x3c/b> <span style="font-size:.76rem;color:var(--muted)">/ ' + (unlimited ? 'ไม่จำกัด' : main.cap + ' วัน') + '\x3c/span>\x3c/div>\x3c/div>'
+          + (!unlimited ? '<div class="bal-bar mt-1"><div class="bal-bar-fill" style="width:' + pct + '%;background:' + esc(b.color) + '">\x3c/div>\x3c/div>' : '')
+          + (others ? '<div class="bal-sub mt-1">' + esc(others) + '\x3c/div>' : '')
+          + (b.note ? '<div class="bal-sub mt-1" style="color:#b45309">' + esc(b.note) + '\x3c/div>' : '')
+          + '\x3c/div>';
+      });
+      $('#balList').html(html || '<div class="text-center text-muted py-3">ยังไม่มีข้อมูล\x3c/div>');
+    }).catch(function(){ $('#balList').html('<div class="text-center text-muted py-3">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
   }
 
-  /* ── Profile edit sheet ── */
-  /* Google Drive's /thumbnail?id= endpoint is often blocked/unreliable inside LINE's in-app browser (silent broken image) —
-     fall back to the lh3.googleusercontent.com mirror, which embeds much more reliably in webviews. */
+  /* ── วันหยุดของฉัน + สลับวันหยุด ── */
+  function loadCalendar(){
+    $('#holGrid').html(skelCards(1));
+    api('liffGetCalendar', HOL.year).then(function(r){
+      HOL.days = r.days || []; HOL.leaves = r.leaves || [];
+      $('#holMeta').text(LF.me ? ('วันหยุดของกลุ่ม' + (r.group === 'sales' ? 'พนักงานขาย' : 'พนักงานสำนักงาน') + ' · หยุดประจำสัปดาห์: ' + LF.me.weekly_off_label) : '');
+      renderCalendar();
+    }).catch(function(){ $('#holGrid').html('<div class="text-center text-muted py-3">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
+    if(LF.me && LF.me.work_group === 'sales'){ $('#swapBox').removeClass('hidden'); loadSwaps(); }
+  }
+
+  function renderCalendar(){
+    $('#holMonthLabel').text(TH_M[HOL.month - 1] + ' ' + (HOL.year + (LF.be ? 543 : 0)));
+    var byDate = {}; HOL.days.forEach(function(h){ byDate[h.date] = h; });
+    var leaveDates = {};
+    HOL.leaves.forEach(function(l){ var c = new Date(l.start_date + 'T00:00:00'), e = new Date(l.end_date + 'T00:00:00'); while(c <= e){ leaveDates[c.getFullYear() + '-' + ('0'+(c.getMonth()+1)).slice(-2) + '-' + ('0'+c.getDate()).slice(-2)] = l; c.setDate(c.getDate()+1); } });
+    var firstDow = new Date(HOL.year, HOL.month - 1, 1).getDay(), lastDate = new Date(HOL.year, HOL.month, 0).getDate(), t = todayIso();
+    var html = ['อา','จ','อ','พ','พฤ','ศ','ส'].map(function(d){ return '<div class="hol-dow">' + d + '\x3c/div>'; }).join('');
+    for(var i = 0; i < firstDow; i++) html += '<div class="hol-cell empty">\x3c/div>';
+    for(var day = 1; day <= lastDate; day++){
+      var iso = HOL.year + '-' + ('0'+HOL.month).slice(-2) + '-' + ('0'+day).slice(-2);
+      var h = byDate[iso];
+      var cls = 'hol-cell' + (h ? (h.type === 'weekly' ? ' off' : ' hol') : '') + (leaveDates[iso] ? ' leave' : '') + (iso === t ? ' today' : '');
+      html += '<div class="' + cls + '">' + day + (h && h.type !== 'weekly' ? '<span class="dot"></span>' : '') + '\x3c/div>';
+    }
+    $('#holGrid').html(html);
+    var ym = HOL.year + '-' + ('0'+HOL.month).slice(-2);
+    var list = HOL.days.filter(function(h){ return h.type !== 'weekly' && h.date.substring(0,7) === ym; });
+    var lh = '<div class="small text-muted mb-2">■ วันหยุดนักขัตฤกษ์/บริษัท · ▢ วันหยุดประจำสัปดาห์ · เส้นฟ้า = วันลาของคุณ\x3c/div>';
+    list.forEach(function(h){
+      var p = h.date.split('-');
+      lh += '<div class="hol-card"><div class="hol-date"><div class="d">' + Number(p[2]) + '\x3c/div><div class="m">' + TH_M_SHORT[Number(p[1])-1] + '\x3c/div>\x3c/div>'
+        + '<div style="flex:1"><div style="font-size:.9rem;font-weight:500">' + esc(h.name) + '\x3c/div>\x3c/div>\x3c/div>';
+    });
+    $('#holList').html(lh + (list.length ? '' : '<div class="text-center text-muted py-2" style="font-size:.85rem">ไม่มีวันหยุดพิเศษในเดือนนี้\x3c/div>'));
+  }
+  function changeHolMonth(delta){
+    HOL.month += delta;
+    if(HOL.month < 1){ HOL.month = 12; HOL.year--; loadCalendar(); return; }
+    if(HOL.month > 12){ HOL.month = 1; HOL.year++; loadCalendar(); return; }
+    renderCalendar();
+  }
+
+  var SW_ST = { SUBMITTED:['รออนุมัติ','#f59e0b'], APPROVED:['อนุมัติ','#10b981'], REJECTED:['ไม่อนุมัติ','#ef4444'], CANCELLED:['ถอนแล้ว','#94a3b8'] };
+  function loadSwaps(){
+    api('liffGetSwaps').then(function(r){
+      var h = '';
+      (r.data || []).slice(0, 10).forEach(function(s){
+        var st = SW_ST[s.status] || [s.status,'#94a3b8'];
+        h += '<div class="hist-card"><div class="d-flex justify-content-between"><b style="font-size:.85rem">' + fmtBE(s.from_date) + ' → ' + fmtBE(s.to_date) + '\x3c/b>'
+          + '<span class="badge-st" style="background:' + st[1] + '22;color:' + st[1] + '">' + st[0] + '\x3c/span>\x3c/div><div class="no">' + esc(s.request_no) + (s.reason ? ' · ' + esc(s.reason) : '') + '\x3c/div>'
+          + (s.status === 'SUBMITTED' ? '<button class="mini-btn danger mt-2" onclick="withdrawSwap(\'' + s.id + '\')">ถอนคำขอ\x3c/button>' : '') + '\x3c/div>';
+      });
+      $('#swapList').html(h);
+    }).catch(function(){});
+  }
+  function submitSwap(){
+    var o = { from_date: $('#swFrom').val(), to_date: $('#swTo').val(), reason: $('#swReason').val().trim() };
+    if(!o.from_date || !o.to_date){ toast('error','เลือกวันที่ให้ครบ'); return; }
+    setBtnLoading('#btnSwap', true);
+    api('liffRequestSwap', o).then(function(r){
+      setBtnLoading('#btnSwap', false);
+      if(r.status !== 'success'){ alertList('error', 'ส่งไม่ได้', r.message); return; }
+      alertList('success', 'ส่งคำขอแล้ว', r.message + (r.warnings && r.warnings.length ? '\n⚠ ' + r.warnings.join('\n⚠ ') : ''));
+      $('#swFrom, #swTo, #swReason').val('');
+      loadSwaps();
+    }).catch(function(e){ setBtnLoading('#btnSwap', false); alertList('warning', 'ไม่แน่ใจว่าส่งสำเร็จหรือไม่', 'ตรวจรายการด้านล่างก่อนส่งซ้ำ\n(' + (e.message || e) + ')'); });
+  }
+  function withdrawSwap(id){
+    api('liffWithdrawSwap', id).then(function(r){ toast(r.status === 'success' ? 'success' : 'error', r.message); loadSwaps(); });
+  }
+
+  /* ── โปรไฟล์ ── */
   function avatarImgHtml(fileId, size){
     if(!fileId) return '';
     size = size || 200;
     var primary = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w' + size;
     var fallback = 'https://lh3.googleusercontent.com/d/' + fileId + '=w' + size;
-    return '<img src="' + primary + '" style="width:84px;height:84px;border-radius:50%;object-fit:cover" '
-      + 'onerror="this.onerror=null;this.src=\'' + fallback + '\';">';
+    return '<img src="' + primary + '" style="width:84px;height:84px;border-radius:50%;object-fit:cover" onerror="this.onerror=null;this.src=\'' + fallback + '\';">';
   }
-
   function openProfileSheet(){
     $('#sheetBody').html('<div class="text-center py-5"><div class="spinner-border" style="width:28px;height:28px;border-width:3px"></div>\x3c/div>');
     $('#detailSheet').addClass('show');
-    api('liffGetMyProfile', LF.userId).then(function(r){
+    api('liffGetMyProfile').then(function(r){
       if(r.status !== 'success'){ $('#sheetBody').html('<div class="text-center text-muted py-4">' + esc(r.message||'ไม่พบข้อมูล') + '\x3c/div>'); return; }
       var p = r.data;
-      var photoHtml = p.photo_file_id
-        ? avatarImgHtml(p.photo_file_id)
-        : '<div style="width:84px;height:84px;border-radius:50%;background:var(--bg);display:grid;place-items:center;color:var(--muted)"><i class="fi fi-rr-user" style="font-size:30px"></i>\x3c/div>';
-      var html = '<h6 class="mb-3">แก้ไขโปรไฟล์</h6>'
-        + '<div class="text-center mb-3">'
-        + '<div id="profPhotoPreview">' + photoHtml + '\x3c/div>'
-        + '<input type="file" id="profPhotoFile" accept="image/*" class="hidden">'
-        + '<button type="button" class="btn btn-sm mt-2" id="btnProfPickPhoto" style="border:1px solid var(--line);border-radius:10px"><i class="fi fi-rr-camera me-1"></i>เปลี่ยนรูป\x3c/button>'
-        + '<input type="hidden" id="profPhotoId">'
-        + '\x3c/div>'
-        + '<label class="form-label">ชื่อ</label><input class="form-control mb-2" id="profFirst" value="' + esc(p.first_name) + '">'
-        + '<label class="form-label">นามสกุล</label><input class="form-control mb-2" id="profLast" value="' + esc(p.last_name) + '">'
-        + '<label class="form-label">ชื่อเล่น</label><input class="form-control mb-3" id="profNick" value="' + esc(p.nickname) + '">'
-        + '<button class="btn btn-accent w-100" id="btnSaveProfile">บันทึก\x3c/button>';
-      $('#sheetBody').html(html);
+      var photoHtml = p.photo_file_id ? avatarImgHtml(p.photo_file_id) : '<div style="width:84px;height:84px;border-radius:50%;background:var(--bg);display:grid;place-items:center;color:var(--muted)"><i class="fi fi-rr-user" style="font-size:30px"></i>\x3c/div>';
+      $('#sheetBody').html('<h6 class="mb-3">แก้ไขโปรไฟล์\x3c/h6><div class="text-center mb-3"><div id="profPhotoPreview">' + photoHtml + '\x3c/div>'
+        + '<input type="file" id="profPhotoFile" accept="image/*" class="hidden"><button type="button" class="btn btn-sm mt-2" id="btnProfPickPhoto" style="border:1px solid var(--line);border-radius:10px"><i class="fi fi-rr-camera me-1"></i>เปลี่ยนรูป\x3c/button><input type="hidden" id="profPhotoId">\x3c/div>'
+        + '<label class="form-label">ชื่อ\x3c/label><input class="form-control mb-2" id="profFirst" value="' + esc(p.first_name) + '">'
+        + '<label class="form-label">นามสกุล\x3c/label><input class="form-control mb-2" id="profLast" value="' + esc(p.last_name) + '">'
+        + '<label class="form-label">ชื่อเล่น\x3c/label><input class="form-control mb-3" id="profNick" value="' + esc(p.nickname) + '">'
+        + '<button class="btn btn-accent w-100" id="btnSaveProfile">บันทึก\x3c/button>');
       $('#btnProfPickPhoto').on('click', function(){ $('#profPhotoFile').trigger('click'); });
-      $('#profPhotoFile').on('change', handleProfilePhoto);
-      $('#btnSaveProfile').on('click', saveProfile);
+      $('#profPhotoFile').on('change', function(ev){
+        var f = ev.target.files[0]; if(!f) return;
+        $('#profPhotoPreview').html('<div class="spinner-border" style="width:28px;height:28px;border-width:3px"></div>');
+        uploadFile(f).then(function(id){ $('#profPhotoId').val(id); $('#profPhotoPreview').html(avatarImgHtml(id)); }).catch(function(e){ toast('error', String(e.message || e)); });
+      });
+      $('#btnSaveProfile').on('click', function(){
+        var o = { first_name: $('#profFirst').val().trim(), last_name: $('#profLast').val().trim(), nickname: $('#profNick').val().trim(), photo_file_id: $('#profPhotoId').val() };
+        if(!o.first_name || !o.last_name){ toast('error','กรุณากรอกชื่อ-นามสกุล'); return; }
+        setBtnLoading('#btnSaveProfile', true);
+        api('liffUpdateProfile', o).then(function(r){ setBtnLoading('#btnSaveProfile', false); toast(r.status === 'success' ? 'success' : 'error', r.message); if(r.status === 'success') closeSheet(); })
+          .catch(function(){ setBtnLoading('#btnSaveProfile', false); toast('error','บันทึกไม่สำเร็จ'); });
+      });
     }).catch(function(){ $('#sheetBody').html('<div class="text-center text-muted py-4">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
   }
 
-  function handleProfilePhoto(ev){
-    var file = ev.target.files[0]; if(!file) return;
-    if(file.size > 2*1024*1024){ toast('error','ไฟล์ใหญ่เกิน 2MB'); return; }
-    var reader = new FileReader();
-    reader.onload = function(e){
-      var base64 = e.target.result.split(',')[1];
-      $('#profPhotoPreview').html('<div class="spinner-border" style="width:28px;height:28px;border-width:3px"></div>');
-      api('liffUploadAttachment', LF.userId, base64, file.name, file.type).then(function(r){
-        if(r.status === 'success'){
-          $('#profPhotoId').val(r.file_id);
-          $('#profPhotoPreview').html(avatarImgHtml(r.file_id));
-        } else {
-          toast('error', r.message || 'อัพโหลดไม่สำเร็จ');
-        }
-      }).catch(function(){ toast('error','อัพโหลดไม่สำเร็จ'); });
-    };
-    reader.readAsDataURL(file);
-  }
 
-  function saveProfile(){
-    var obj = {
-      first_name: $('#profFirst').val().trim(),
-      last_name: $('#profLast').val().trim(),
-      nickname: $('#profNick').val().trim(),
-      photo_file_id: $('#profPhotoId').val()
-    };
-    if(!obj.first_name || !obj.last_name){ toast('error','กรุณากรอกชื่อ-นามสกุล'); return; }
-    setBtnLoading('#btnSaveProfile', true);
-    api('liffUpdateProfile', LF.userId, obj).then(function(r){
-      setBtnLoading('#btnSaveProfile', false);
-      if(r.status === 'success'){
-        toast('success', r.message);
-        $('#lfSub').text(r.name);
-        closeSheet();
-      } else { toast('error', r.message); }
-    }).catch(function(){ setBtnLoading('#btnSaveProfile', false); toast('error','บันทึกไม่สำเร็จ'); });
+  /* ── เบิกค่าน้ำมัน ── */
+  var FU = { data: null, photoStart: '', photoEnd: '' };
+  var FU_ST = { SUBMITTED:['รออนุมัติ','#f59e0b'], APPROVED:['อนุมัติแล้ว','#10b981'], RETURNED:['ส่งกลับให้แก้','#ef4444'] };
+  function loadFuel(month){
+    month = month || $('#fuMonth').val() || '';
+    $('#fuSummary').html(skelRows(2)); $('#fuList').html('');
+    api('liffFuelGet', month).then(function(r){
+      if(!r.eligible){ $('#fuSummary').html('<div class="text-muted small">ฝ่ายของคุณไม่มีสิทธิ์เบิกค่าน้ำมัน\x3c/div>'); $('#fuFormCard').addClass('hidden'); return; }
+      FU.data = r;
+      $('#fuMonth').html(r.months.map(function(m){ return '<option value="' + m.value + '">' + esc(m.label) + '\x3c/option>'; }).join('')).val(r.month);
+      $('#fuRateLbl').text('ระยะทาง × ' + r.rate + ' บาท');
+      renderFuel(r);
+    }).catch(function(e){ $('#fuSummary').html('<div class="text-danger small">' + esc(e.message || e) + '\x3c/div>'); });
   }
+  function renderFuel(r){
+    var st = r.claim ? (FU_ST[r.claim.status] || [r.claim.status,'#94a3b8']) : null;
+    var h = '<div class="d-flex justify-content-between align-items-start"><div><div class="small text-muted">' + esc(r.month_label) + '\x3c/div>'
+      + '<div style="font-size:1.5rem;font-weight:700;line-height:1.2">' + r.amount.toLocaleString() + ' บาท\x3c/div>'
+      + '<div class="small text-muted">' + r.trips.length + ' เที่ยว · ' + r.total_km + ' กม. × ' + r.rate + ' บาท\x3c/div>\x3c/div>'
+      + (st ? '<span class="badge-st" style="background:' + st[1] + '22;color:' + st[1] + '">' + st[0] + '\x3c/span>' : '<span class="badge-st" style="background:#e2e8f0;color:#475569">ยังไม่ส่ง\x3c/span>') + '\x3c/div>';
+    if(r.claim && r.claim.status === 'RETURNED' && !r.locked) h += '<div class="rule-box rule-err mt-2"><b>ต้องแก้:\x3c/b> ' + esc(r.claim.return_reason) + '<br><small>โดย ' + esc(r.claim.decided_by) + ' — แก้เที่ยวแล้วกดส่งเบิกใหม่\x3c/small>\x3c/div>';
+    if(r.locked && r.claim) h += '<div class="small mt-2" style="color:#0369a1">' + esc(r.claim.request_no) + ' · จ่ายรอบ ' + esc(r.claim.pay_month_label) + '\x3c/div>';
+    if(!r.locked && r.window_message) h += '<div class="small mt-2 ' + (r.can_submit ? 'text-success' : 'text-muted') + '">' + esc(r.window_message) + '\x3c/div>';
+    h += '<div class="d-flex gap-2 mt-3">'
+      + (!r.locked ? '<button class="btn btn-accent flex-fill" id="btnFuSubmit"' + (r.can_submit ? '' : ' disabled') + '>ส่งเบิกเดือนนี้\x3c/button>' : '')
+      + '<button class="mini-btn brand flex-fill" id="btnFuExport"' + (r.trips.length ? '' : ' disabled') + '>Export เล่มจดเลขไมล์ (PDF)\x3c/button>\x3c/div>';
+    $('#fuSummary').html(h);
+    $('#btnFuSubmit').on('click', submitFuel);
+    $('#btnFuExport').on('click', exportFuel);
+    $('#fuFormCard').toggleClass('hidden', !!r.locked);
+    if(!$('#fuId').val()){
+      if(!$('#fuDate').val()) $('#fuDate').val(todayIso());
+      if(!$('#fuStart').val() && r.last_odo_end) $('#fuStart').val(r.last_odo_end);
+    }
+    var lh = '';
+    if(!r.trips.length) lh = '<div class="text-center text-muted py-3 small">ยังไม่มีเที่ยวในเดือนนี้\x3c/div>';
+    r.trips.forEach(function(t){
+      lh += '<div class="hist-card"><div class="d-flex justify-content-between"><b style="font-size:.88rem">' + fmtBE(t.date) + '\x3c/b><b style="font-size:.88rem">' + t.km + ' กม. · ' + t.amount + ' บ.\x3c/b>\x3c/div>'
+        + '<div class="no">' + t.odo_start + ' → ' + t.odo_end + '\x3c/div><div class="small mt-1">' + esc(t.place) + '\x3c/div>'
+        + '<div class="d-flex flex-wrap gap-2 mt-2">'
+        + (t.photo_start ? '<a class="mini-btn" target="_blank" href="' + t.photo_start.url + '">รูปขาไป\x3c/a>' : '')
+        + (t.photo_end ? '<a class="mini-btn" target="_blank" href="' + t.photo_end.url + '">รูปขากลับ\x3c/a>' : '')
+        + (!r.locked ? '<button class="mini-btn brand" onclick="editFuel(\'' + t.id + '\')">แก้ไข\x3c/button><button class="mini-btn danger" onclick="delFuel(\'' + t.id + '\')">ลบ\x3c/button>' : '')
+        + '\x3c/div>\x3c/div>';
+    });
+    $('#fuList').html(lh);
+  }
+  function fuCalc(){
+    var s = Number($('#fuStart').val()), e = Number($('#fuEnd').val()), rate = FU.data ? FU.data.rate : 6;
+    $('#fuCalc').text(s > 0 && e > s ? (e - s) + ' กม. = ' + ((e - s) * rate) + ' บาท' : '-');
+  }
+  function fuPhoto(which){
+    var inp = which === 'start' ? '#fuPhotoStart' : '#fuPhotoEnd', st = $(inp + 'St');
+    var f = $(inp)[0].files[0]; if(!f) return;
+    st.html('<span class="spin-sm"></span><span>กำลังอัปโหลด...</span>');
+    uploadFile(f).then(function(id){ FU[which === 'start' ? 'photoStart' : 'photoEnd'] = id; st.html('<i class="fi fi-rr-check-circle" style="color:#10b981"></i><span>แนบแล้ว</span>'); })
+      .catch(function(e){ st.html('<span style="color:#ef4444">' + esc(e.message || e) + '</span>'); });
+  }
+  function resetFuForm(keepDate){
+    $('#fuId').val(''); $('#fuEnd, #fuPlace').val(''); $('#fuPhotoStart, #fuPhotoEnd').val(''); $('#fuPhotoStartSt, #fuPhotoEndSt').html('');
+    FU.photoStart = ''; FU.photoEnd = '';
+    if(!keepDate) $('#fuDate').val(todayIso());
+    $('#fuStart').val(FU.data && FU.data.last_odo_end ? FU.data.last_odo_end : '');
+    $('#fuFormTitle').text('บันทึกเที่ยว'); $('#btnFuSave').text('บันทึกเที่ยว'); $('#btnFuCancelEdit').addClass('hidden'); fuCalc();
+  }
+  function saveFuel(){
+    var o = { id: $('#fuId').val() || '', date: $('#fuDate').val(), odo_start: Number($('#fuStart').val()), odo_end: Number($('#fuEnd').val()),
+      place: $('#fuPlace').val().trim(), photo_start: FU.photoStart, photo_end: FU.photoEnd };
+    setBtnLoading('#btnFuSave', true);
+    api('liffFuelSaveTrip', o).then(function(r){
+      setBtnLoading('#btnFuSave', false);
+      if(r.status !== 'success'){ alertList('error', 'บันทึกไม่ได้', r.message); return; }
+      toast('success', r.message);
+      if(r.warnings && r.warnings.length) alertList('warning', 'โปรดตรวจสอบ', r.warnings.join('\n'));
+      var keep = $('#fuDate').val();
+      loadFuel(keep.substring(0, 7));
+      resetFuForm(true); $('#fuDate').val(keep);
+    }).catch(function(e){ setBtnLoading('#btnFuSave', false); alertList('warning', 'ไม่แน่ใจว่าบันทึกสำเร็จหรือไม่', 'ตรวจรายการด้านล่างก่อนบันทึกซ้ำ\n(' + (e.message || e) + ')'); });
+  }
+  function editFuel(id){
+    var t = (FU.data.trips || []).filter(function(x){ return x.id === id; })[0]; if(!t) return;
+    $('#fuId').val(t.id); $('#fuDate').val(t.date); $('#fuStart').val(t.odo_start); $('#fuEnd').val(t.odo_end); $('#fuPlace').val(t.place);
+    FU.photoStart = t.photo_start ? t.photo_start.id : ''; FU.photoEnd = t.photo_end ? t.photo_end.id : '';
+    $('#fuPhotoStartSt').html(FU.photoStart ? '<span>มีรูปเดิมแล้ว (เลือกใหม่เพื่อเปลี่ยน)</span>' : '');
+    $('#fuPhotoEndSt').html(FU.photoEnd ? '<span>มีรูปเดิมแล้ว (เลือกใหม่เพื่อเปลี่ยน)</span>' : '');
+    $('#fuFormTitle').text('แก้ไขเที่ยว ' + fmtBE(t.date)); $('#btnFuSave').text('บันทึกการแก้ไข'); $('#btnFuCancelEdit').removeClass('hidden');
+    fuCalc(); document.getElementById('fuFormCard').scrollIntoView({ behavior:'smooth' });
+  }
+  function delFuel(id){
+    Swal.fire({ title:'ลบเที่ยวนี้?', icon:'warning', showCancelButton:true, confirmButtonText:'ลบ', cancelButtonText:'ปิด', confirmButtonColor:'#ef4444' }).then(function(res){
+      if(!res.isConfirmed) return;
+      api('liffFuelDeleteTrip', id).then(function(r){ toast(r.status === 'success' ? 'success' : 'error', r.message); loadFuel(); });
+    });
+  }
+  function submitFuel(){
+    var r = FU.data;
+    Swal.fire({ title:'ส่งเบิกเดือน ' + r.month_label + '?', html: r.trips.length + ' เที่ยว · ' + r.total_km + ' กม.<br><b>' + r.amount.toLocaleString() + ' บาท\x3c/b><br><small class="text-muted">ส่งแล้วแก้/เพิ่มเที่ยวของเดือนนี้ไม่ได้ จนกว่าผู้อนุมัติจะส่งกลับ\x3c/small>',
+      icon:'question', showCancelButton:true, confirmButtonText:'ส่งเบิก', cancelButtonText:'ยกเลิก' }).then(function(res){
+      if(!res.isConfirmed) return;
+      api('liffFuelSubmit', r.month).then(function(x){ if(x.status === 'success') alertList('success', 'ส่งเบิกแล้ว', x.message); else alertList('error', 'ส่งไม่ได้', x.message); loadFuel(r.month); })
+        .catch(function(e){ alertList('warning', 'ไม่แน่ใจว่าส่งสำเร็จหรือไม่', 'ดูสถานะก่อนส่งซ้ำ\n(' + (e.message || e) + ')'); loadFuel(r.month); });
+    });
+  }
+  function exportFuel(){
+    var m = FU.data.month;
+    Swal.fire({ title:'กำลังสร้างไฟล์...', didOpen:function(){ Swal.showLoading(); }, allowOutsideClick:false });
+    api('liffFuelExport', m).then(function(r){
+      if(r.status !== 'success'){ Swal.fire({ icon:'error', title:r.message }); return; }
+      Swal.fire({ icon:'success', title:'สร้างเล่มจดเลขไมล์แล้ว', html:'ส่งลิงก์เข้าแชท LINE ของคุณแล้ว<br><a href="' + r.url + '" target="_blank">เปิดไฟล์ PDF\x3c/a>' });
+    }).catch(function(e){ Swal.fire({ icon:'error', title:String(e.message || e) }); });
+  }
+  $(document).on('change', '#fuMonth', function(){ resetFuForm(); loadFuel($(this).val()); });
+  $(document).on('input', '#fuStart, #fuEnd', fuCalc);
+  $(document).on('change', '#fuPhotoStart', function(){ fuPhoto('start'); });
+  $(document).on('change', '#fuPhotoEnd', function(){ fuPhoto('end'); });
+  $(document).on('click', '#btnFuSave', saveFuel);
+  $(document).on('click', '#btnFuCancelEdit', function(){ resetFuForm(); });
 
-  /* ── Stats tab ── */
+  /* ── สถิติ ── */
   (function initStatsYear(){
-    var nowY = new Date().getFullYear();
-    var opt = '';
-    for(var y = nowY; y >= nowY - 3; y--) opt += '<option value="' + y + '">' + (y + (LF.be ? 543 : 0)) + '\x3c/option>';
-    $('#statsYear').html(opt);
-    $('#statsYear').on('change', loadStats);
+    var nowY = new Date().getFullYear(), opt = '';
+    for(var y = nowY; y >= nowY - 3; y--) opt += '<option value="' + y + '">' + (y + 543) + '\x3c/option>';
+    $('#statsYear').html(opt).on('change', loadStats);
   })();
-
   function loadStats(){
     var year = $('#statsYear').val() || new Date().getFullYear();
-    $('#statsList').html('<div class="text-center py-4"><div class="spinner-border spinner-border-sm" style="color:var(--brand)">\x3c/div>\x3c/div>');
-    api('liffGetMyStats', LF.userId, year).then(function(r){
-      if(r.status !== 'success' || !r.data.length){
-        $('#statsList').html('<div class="text-center text-muted py-4">ยังไม่มีข้อมูลการลาในปีนี้\x3c/div>'); return;
-      }
-      var totalDays = r.data.reduce(function(a, d){ return a + d.days; }, 0);
-      var html = '<div class="card-soft mb-3" style="background:linear-gradient(135deg,var(--brand),var(--brand-700));color:#fff">'
-        + '<div style="font-size:.82rem;opacity:.85">ลาทั้งหมดในปี ' + (Number(year) + (LF.be?543:0)) + '\x3c/div>'
-        + '<div style="font-size:2rem;font-weight:700;line-height:1.2">' + totalDays + '\x3c/div>'
-        + '<div style="font-size:.82rem;opacity:.85">วัน\x3c/div>\x3c/div>';
+    $('#statsList').html('<div class="text-center py-4"><div class="spinner-border spinner-border-sm">\x3c/div>\x3c/div>');
+    api('liffGetMyStats', year).then(function(r){
+      if(r.status !== 'success' || !r.data.length){ $('#statsList').html('<div class="text-center text-muted py-4">ยังไม่มีข้อมูลการลาในปีนี้\x3c/div>'); return; }
+      var total = r.data.reduce(function(a, d){ return a + d.days; }, 0);
+      var html = '<div class="card-soft mb-3" style="background:linear-gradient(135deg,var(--brand),var(--brand-700));color:#fff"><div style="font-size:.82rem;opacity:.85">ลาทั้งหมดในปี ' + (Number(year) + (LF.be?543:0)) + '\x3c/div><div style="font-size:2rem;font-weight:700;line-height:1.2">' + total + '\x3c/div><div style="font-size:.82rem;opacity:.85">วัน\x3c/div>\x3c/div>';
       r.data.forEach(function(d){
-        var pct = totalDays > 0 ? Math.round(d.days / totalDays * 100) : 0;
-        html += '<div class="card-soft">'
-          + '<div class="d-flex justify-content-between align-items-center mb-2">'
-          + '<span style="font-size:.9rem;font-weight:500"><span class="bal-dot" style="background:' + esc(d.color) + '"></span>' + esc(d.name) + '\x3c/span>'
-          + '<span style="font-size:.9rem;font-weight:600">' + d.days + ' วัน\x3c/span>\x3c/div>'
-          + '<div style="background:#f1f5f9;border-radius:99px;height:8px;overflow:hidden">'
-          + '<div style="height:100%;width:' + pct + '%;background:' + esc(d.color) + ';border-radius:99px;transition:width .5s">\x3c/div>\x3c/div>'
+        var pct = total > 0 ? Math.round(d.days / total * 100) : 0;
+        html += '<div class="card-soft"><div class="d-flex justify-content-between align-items-center mb-2"><span style="font-size:.9rem;font-weight:500"><span class="bal-dot" style="background:' + esc(d.color) + '"></span>' + esc(d.name) + '\x3c/span><span style="font-size:.9rem;font-weight:600">' + d.days + ' วัน\x3c/span>\x3c/div>'
+          + '<div style="background:#f1f5f9;border-radius:99px;height:8px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + esc(d.color) + ';border-radius:99px">\x3c/div>\x3c/div>'
           + '<div style="font-size:.74rem;color:var(--muted);margin-top:4px">' + d.count + ' ครั้ง · ' + pct + '%\x3c/div>\x3c/div>';
       });
       $('#statsList').html(html);
     }).catch(function(){ $('#statsList').html('<div class="text-center text-muted py-3">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
-  }
-
-  /* ── Holidays tab (calendar view) ── */
-  var TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  var TH_M_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-
-  function loadHolidays(){
-    $('#holGrid').html(skelCards(1));
-    api('liffGetHolidays', HOL.year).then(function(r){
-      HOL.data = r.data || [];
-      renderHolCalendar();
-    }).catch(function(){ $('#holGrid').html('<div class="text-center text-muted py-3">โหลดข้อมูลไม่สำเร็จ\x3c/div>'); });
-  }
-
-  function renderHolCalendar(){
-    $('#holMonthLabel').text(TH_M[HOL.month - 1] + ' ' + (HOL.year + (LF.be ? 543 : 0)));
-
-    var byDate = {};
-    HOL.data.forEach(function(h){ (byDate[h.date] = byDate[h.date] || []).push(h); });
-
-    var firstDow = new Date(HOL.year, HOL.month - 1, 1).getDay();
-    var lastDate = new Date(HOL.year, HOL.month, 0).getDate();
-    var todayIso = new Date().toISOString().substring(0, 10);
-
-    var html = ['อา','จ','อ','พ','พฤ','ศ','ส'].map(function(d){ return '<div class="hol-dow">' + d + '\x3c/div>'; }).join('');
-    for(var i = 0; i < firstDow; i++){ html += '<div class="hol-cell empty">\x3c/div>'; }
-    for(var day = 1; day <= lastDate; day++){
-      var iso = HOL.year + '-' + ('0'+HOL.month).slice(-2) + '-' + ('0'+day).slice(-2);
-      var hs = byDate[iso];
-      var cls = 'hol-cell' + (hs ? ' hol' : '') + (iso === todayIso ? ' today' : '');
-      html += '<div class="' + cls + '"' + (hs ? ' onclick="showHolDay(\'' + iso + '\')"' : '') + '>' + day
-        + (hs ? '<span class="dot"></span>' : '') + '\x3c/div>';
-    }
-    $('#holGrid').html(html);
-
-    var monthList = HOL.data.filter(function(h){ return h.date.substring(0,7) === (HOL.year + '-' + ('0'+HOL.month).slice(-2)); })
-      .sort(function(a,b){ return a.date < b.date ? -1 : 1; });
-    if(!monthList.length){ $('#holList').html('<div class="text-center text-muted py-3" style="font-size:.85rem">ไม่มีวันหยุดในเดือนนี้\x3c/div>'); return; }
-    var lhtml = '';
-    monthList.forEach(function(h){
-      var p = h.date.split('-');
-      var isToday = h.date === todayIso;
-      lhtml += '<div class="hol-card">'
-        + '<div class="hol-date" style="' + (isToday?'background:#ef4444':'') + '">'
-        + '<div class="d">' + Number(p[2]) + '\x3c/div>'
-        + '<div class="m">' + TH_M_SHORT[Number(p[1])-1] + '\x3c/div>\x3c/div>'
-        + '<div style="flex:1">'
-        + '<div style="font-size:.9rem;font-weight:500">' + esc(h.name) + '\x3c/div>'
-        + '<div class="small" style="color:var(--muted);font-size:.74rem">'
-        + (h.type==='company'?'วันหยุดบริษัท':'วันหยุดราชการ')
-        + (isToday?' · <b style="color:#ef4444">วันนี้\x3c/b>':'')
-        + '\x3c/div>\x3c/div>\x3c/div>';
-    });
-    $('#holList').html(lhtml);
-  }
-
-  function showHolDay(iso){
-    var hs = HOL.data.filter(function(h){ return h.date === iso; });
-    if(!hs.length) return;
-    var p = iso.split('-');
-    var html = '<h6 class="mb-2">' + Number(p[2]) + ' ' + TH_M[Number(p[1])-1] + ' ' + (Number(p[0]) + (LF.be?543:0)) + '\x3c/h6>';
-    hs.forEach(function(h){
-      html += detRow('fi-rr-calendar-star', h.type==='company'?'วันหยุดบริษัท':'วันหยุดราชการ', h.name);
-    });
-    $('#sheetBody').html(html);
-    $('#detailSheet').addClass('show');
-  }
-
-  function changeHolMonth(delta){
-    HOL.month += delta;
-    if(HOL.month < 1){ HOL.month = 12; HOL.year--; loadHolidays(); return; }
-    if(HOL.month > 12){ HOL.month = 1; HOL.year++; loadHolidays(); return; }
-    renderHolCalendar();
   }
   </script>
 </body>
